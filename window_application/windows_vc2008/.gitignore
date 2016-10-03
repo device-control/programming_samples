@@ -1,0 +1,12 @@
+
+*~
+\#*\#
+.\#*
+
+*.vcproj.*.user
+*.ncb
+*.suo
+*.ilk
+*.pdb
+*/Debug
+*/Release

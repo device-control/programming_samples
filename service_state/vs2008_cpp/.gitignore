@@ -1,0 +1,23 @@
+# emacs
+*~
+\#*\#
+\.\#*
+*.bak
+
+# vc temp
+*.ncb
+*.suo
+*.sln.cache
+*.tlb
+*.plg
+*.opt
+*.aps
+*.vcproj.*.*.user
+tags
+Debug/
+Release/
+
+# gtags
+GPATH
+GRTAGS
+GTAGS

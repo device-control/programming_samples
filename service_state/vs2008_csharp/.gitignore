@@ -1,0 +1,9 @@
+
+*~
+\#*\#
+.\#*
+
+*.vcproj.*.user
+*.ncb
+*.suo
+*/obj
