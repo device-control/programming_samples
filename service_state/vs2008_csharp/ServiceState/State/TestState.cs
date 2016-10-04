@@ -25,6 +25,11 @@ namespace ServiceState.State
         {
             // 何もしない
         }
+        
+        public virtual void EventD(Common.Service service, Common.MQEvent ev)
+        {
+            // 何もしない
+        }
 
         public override void HandleEvent(Common.Service service, Common.MQEvent ev)
         {
@@ -38,6 +43,9 @@ namespace ServiceState.State
                     break;
                 case "EventC":
                     EventC(service, ev);
+                    break;
+                case "EventD":
+                    EventD(service, ev);
                     break;
                 default:
                     break;
