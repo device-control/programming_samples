@@ -27,7 +27,7 @@ namespace ServiceState.Service
         class TCPMessage
         {
             [DataMember]
-            public string eventName;
+            public string eventName = "";
         }
         
         public TCPTestService() : base("TCPTestService")
@@ -36,9 +36,6 @@ namespace ServiceState.Service
             buffers["test_tcp_client"] = new Byte[64*1024];
             buffersIndex["test_tcp_server"] = 0;
             buffersIndex["test_tcp_client"] = 0;
-
-            // 本サービスで取り扱う（受信する）イベントを登録する
-            SetReceiveMQEvents(new Type[] { typeof(MQEvent.GeneralEvent) });
 
             AddState(new State.TCPTestStateA());
             StartStateName = "TCPTestStateA";
@@ -112,7 +109,7 @@ namespace ServiceState.Service
             {
                 var data = (TCPMessage)serializer.ReadObject(ms);
                 Console.WriteLine(data.eventName);
-                AddEvent(new MQEvent.GeneralEvent(data.eventName));
+                AddEvent(new Common.Event(data.eventName));
             }
             //string oneString = System.Text.Encoding.ASCII.GetString(one);
             //AddEvent(new MQEvent.GeneralEvent(oneString));

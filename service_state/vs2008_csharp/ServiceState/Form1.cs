@@ -35,14 +35,14 @@ namespace ServiceState
             Common.ServiceManager.GetInstance().AddService(testService);
             testService.AddObserver(this);
             ///testService.Start();
-            testService.AddEvent(new MQEvent.GeneralEvent("EventA")); // イベント "EventA" 発行
+            testService.AddEvent(new Common.Event("EventA")); // イベント "EventA" 発行
 
 
             // TCP テスト
             tcpTestService = new Service.TCPTestService();
             Common.ServiceManager.GetInstance().AddService(tcpTestService);
             tcpTestService.Start();
-            tcpTestService.AddEvent(new MQEvent.GeneralEvent("EventA")); // イベント "EventA" 発行
+            tcpTestService.AddEvent(new Common.Event("EventA")); // イベント "EventA" 発行
         }
 
         // 「デザイナの表示」を選択しＵＩ画面表示し、表示中の画面でマウス右ボタンメニューから
@@ -62,11 +62,11 @@ namespace ServiceState
         {
             if (stateName == "TestStateB")
             {
-                testService.AddEvent(new MQEvent.GeneralEvent("EventB"));
+                testService.AddEvent(new Common.Event("EventB"));
             }
             if (stateName == "TestStateC")
             {
-                testService.AddEvent(new MQEvent.GeneralEvent("EventC"));
+                testService.AddEvent(new Common.Event("EventC"));
             }
         }
     }

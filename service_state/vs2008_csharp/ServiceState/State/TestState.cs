@@ -11,27 +11,27 @@ namespace ServiceState.State
         {
         }
 
-        public virtual void EventA(Common.Service service, Common.MQEvent ev)
+        public virtual void EventA(Common.Service service, Common.Event ev)
         {
             // 何もしない
         }
 
-        public virtual void EventB(Common.Service service, Common.MQEvent ev)
+        public virtual void EventB(Common.Service service, Common.Event ev)
         {
             // 何もしない
         }
 
-        public virtual void EventC(Common.Service service, Common.MQEvent ev)
+        public virtual void EventC(Common.Service service, Common.Event ev)
         {
             // 何もしない
         }
         
-        public virtual void EventD(Common.Service service, Common.MQEvent ev)
+        public virtual void EventD(Common.Service service, Common.Event ev)
         {
             // 何もしない
         }
 
-        public override void HandleEvent(Common.Service service, Common.MQEvent ev)
+        public override void HandleEvent(Common.Service service, Common.Event ev)
         {
             switch (ev.Name)
             {

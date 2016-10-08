@@ -13,7 +13,7 @@ namespace ServiceState.Common
             Name = name;
         }
 
-        public abstract void HandleEvent(Service service, MQEvent ev);
+        public abstract void HandleEvent(Service service, Event ev);
 
         // 各ステート前処理
         public virtual void SetUp()

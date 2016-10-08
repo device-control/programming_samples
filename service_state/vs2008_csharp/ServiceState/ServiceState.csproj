@@ -58,9 +58,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Common\Event.cs" />
     <Compile Include="Common\IServiceObserver.cs" />
     <Compile Include="Common\IStreamObserver.cs" />
-    <Compile Include="Common\MQEvent.cs" />
     <Compile Include="Common\Service.cs" />
     <Compile Include="Common\ServiceManager.cs" />
     <Compile Include="Common\ServiceObservable.cs" />
@@ -76,7 +76,6 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
-    <Compile Include="MQEvent\GeneralEvent.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Form1.resx">

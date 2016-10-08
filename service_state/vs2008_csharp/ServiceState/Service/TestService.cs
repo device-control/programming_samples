@@ -12,9 +12,6 @@ namespace ServiceState.Service
         private Common.UDPStream udpStream = null;
         public TestService() : base("TestService")
         {
-            // 本サービスで取り扱う（受信する）イベントを登録する
-            SetReceiveMQEvents(new Type[] { typeof(MQEvent.GeneralEvent) });
-
             AddState(new State.TestStateA());
             AddState(new State.TestStateB());
             AddState(new State.TestStateC());

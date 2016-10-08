@@ -19,7 +19,7 @@ namespace ServiceState.State
          */
 
 
-        public override void EventB(Common.Service service, Common.MQEvent ev)
+        public override void EventB(Common.Service service, Common.Event ev)
         {
             ((Service.TestService)service).SendMessage(System.Text.Encoding.ASCII.GetBytes("exec TestStateB::EventB"));
             service.ChangeState("TestStateC");
