@@ -11,22 +11,11 @@ namespace ServiceState.State
         {
         }
 
-        /*
-        public override void EventA(common.Service service, common.MQEvent ev)
+        public override void EventC(Common.Service service, Common.Event ev)
         {
-            // 何もしない
+            System.Threading.Thread.Sleep(1000 * 1);
+            ((Service.TestService)service).SendMessage(System.Text.Encoding.ASCII.GetBytes("EventA"));
+            service.ChangeState("TestStateA");
         }
-
-        public override void EventB(common.Service service, common.MQEvent ev)
-        {
-            // 何もしない
-        }
-
-        public override void EventC(common.Service service, common.MQEvent ev)
-        {
-            // 何もしない
-        }
-         */
-
     }
 }

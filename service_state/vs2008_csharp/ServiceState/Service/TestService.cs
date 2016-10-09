@@ -43,12 +43,14 @@ namespace ServiceState.Service
 
         void Common.IStreamObserver.StatusChanged(Common.Stream stream, Common.Stream.Status status)
         {
-            Console.WriteLine("status change {0}", status);
+            Console.WriteLine("status change {0} {1}", stream.GetConfig("STREAM_NAME"), status);
         }
 
         void Common.IStreamObserver.MessageReceived(Common.Stream stream, Byte[] bytes)
         {
-            Console.WriteLine("message received[{0}]", System.Text.Encoding.ASCII.GetString(bytes));
+            Console.WriteLine("message received {0} [{1}]", stream.GetConfig("STREAM_NAME"), System.Text.Encoding.ASCII.GetString(bytes));
+            string eventName = System.Text.Encoding.ASCII.GetString(bytes);
+            AddEvent(new Common.Event(eventName));
         }
 
         public bool SendMessage(byte[] bytes)

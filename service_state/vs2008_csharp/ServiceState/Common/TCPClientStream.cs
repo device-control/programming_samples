@@ -17,11 +17,10 @@ namespace ServiceState.Common
          * SEND_IP   :  送信ＩＰ(無指定の場合、localhost)
          * SEND_PORT :  送信ポート
          */
-        private System.Net.Sockets.TcpClient tcpClient = null;
-        private System.Net.Sockets.NetworkStream networkStream = null;
-        private Thread thread = null;
-        private volatile bool shouldStop = false;
-        private volatile bool isOpen = false;
+        private System.Net.Sockets.TcpClient m_tcpClient = null;
+        private System.Net.Sockets.NetworkStream m_networkStream = null;
+        private Thread m_thread = null;
+        private volatile bool m_is_running = false;
 
         public TCPClientStream(IPConfig ipconf)
             : base(ipconf)
@@ -31,21 +30,20 @@ namespace ServiceState.Common
 
         public override void Open()
         {
-            if(isOpen) return;
-            thread = new Thread(new ThreadStart(HandleMessage));
-            shouldStop = false;
-            thread.Start(); // TODO: 接続完了まで待つ必要がある
-            NotifyStatusChanged(this, Stream.Status.Connect);
+            if(m_is_running) return;
+            m_thread = new Thread(new ThreadStart(HandleMessage));
+            m_is_running = true;
+            m_thread.Start();
         }
 
         public override void Close()
         {
-            if(!isOpen) return;
+            if(!m_is_running) return;
             //サーバとの接続を終了
-            shouldStop = true;
-            thread.Join();
-            thread = null;
-            NotifyStatusChanged(this, Stream.Status.Disconnect);
+            m_networkStream.Close();
+            m_is_running = false;
+            m_thread.Join();
+            m_thread = null;
         }
 
         public override void Write(byte[] bytes)
@@ -53,7 +51,8 @@ namespace ServiceState.Common
             //送信
             try
             {
-                networkStream.Write(bytes, 0, bytes.Length);
+                Console.Write("TCPClient Write {0}\n", bytes.ToString() );
+                m_networkStream.Write(bytes, 0, bytes.Length);
             }
             catch
             {
@@ -64,58 +63,73 @@ namespace ServiceState.Common
 
         public void HandleMessage()
         {
-            isOpen = true;
-            try
+            while(m_is_running)
             {
-                //IPアドレスとポート番号を渡してサーバ側へ接続
-                tcpClient = new System.Net.Sockets.TcpClient(ipconfig["SEND_IP"], int.Parse(ipconfig["SEND_PORT"]));
-                networkStream = tcpClient.GetStream();
-                //読み取り、書き込みのタイムアウトを10秒にする
-                //デフォルトはInfiniteで、タイムアウトしない
-                //(.NET Framework 2.0以上が必要)
-                networkStream.ReadTimeout = 1000 * 10;
-                networkStream.WriteTimeout = 1000 * 10;
-
-                int receiveSize = 0;
-                byte[] receiveBytes = new byte[64 * 1024];
-                while(!shouldStop/*tcpClinet.Connected*/){
-                    // 受信待ち
-                    receiveSize = networkStream.Read(receiveBytes, 0, receiveBytes.Length);
-                    //0の場合、タイムアウトかクライアント切断
-                    if (receiveSize == 0)
+                try
+                {
+                    m_tcpClient = null;
+                    m_networkStream = null;
+                    //IPアドレスとポート番号を渡してサーバ側へ接続
+                    m_tcpClient = new System.Net.Sockets.TcpClient(ipconfig["SEND_IP"], int.Parse(ipconfig["SEND_PORT"]));
+                    m_networkStream = m_tcpClient.GetStream();
+                    NotifyStatusChanged(this, Stream.Status.Connect); // 接続完了
+                    //読み取り、書き込みのタイムアウトを10秒にする
+                    //デフォルトはInfiniteで、タイムアウトしない
+                    //(.NET Framework 2.0以上が必要)
+                    //m_networkStream.ReadTimeout = 1000 * 1;
+                    //m_networkStream.WriteTimeout = 1000 * 1;
+                    int receiveSize = 0;
+                    byte[] receiveBytes = new byte[64 * 1024];
+                    while (m_is_running)
                     {
-                        if( !tcpClient.Connected ) {
-                            // 接続中でないならクライアント切断と判断
-                            shouldStop = false;
+                        receiveSize = m_networkStream.Read(receiveBytes, 0, receiveBytes.Length);
+                        //0の場合、タイムアウトかクライアント切断
+                        if (receiveSize == 0)
+                        {
+                            if (!m_tcpClient.Connected)
+                            {
+                                // 接続中でないならクライアント切断と判断
+                                break;
+                            }
+                            // 接続中ならタイムアウト
+                            continue;
                         }
-                        // 接続中ならタイムアウト
+                        byte[] buff = new byte[receiveSize];
+                        Buffer.BlockCopy(receiveBytes, 0, buff, 0, receiveSize);
+                        NotifyMessageReceived(this, buff);
+                    }
+                    m_networkStream.Close();
+                    m_networkStream = null;
+                    m_tcpClient.Close();
+                    m_tcpClient = null;
+                    m_is_running = false;
+                }
+                catch (System.Net.Sockets.SocketException e)
+                {
+                    if( e.SocketErrorCode == System.Net.Sockets.SocketError.ConnectionRefused){
+                        Console.WriteLine("TCP client timeout");
+                        System.Threading.Thread.Sleep(1000 * 1);
                         continue;
                     }
-                    byte[] buff = new byte[receiveSize];
-                    Buffer.BlockCopy(receiveBytes, 0, buff, 0, receiveSize);
-                    NotifyMessageReceived(this, buff);
+                    m_is_running = false;
                 }
-                networkStream.Close();
-                networkStream = null;
-                tcpClient.Close();
-                tcpClient = null;
+                catch
+                {
+                    Console.WriteLine("TCPクライアントを終了しました\n");
+                    m_is_running = false;
+                }
             }
-            catch
+            if(null != m_networkStream)
             {
-                Console.WriteLine("TCPクライアントを終了しました\n");
+                m_networkStream.Close();
+                m_networkStream = null;
             }
-            if(null != networkStream)
+            if(null != m_tcpClient)
             {
-                networkStream.Close();
-                networkStream = null;
+                m_tcpClient.Close();
+                m_tcpClient = null;
             }
-            if(null != tcpClient)
-            {
-                tcpClient.Close();
-                tcpClient = null;
-            }
-                
-            isOpen = false;
+            NotifyStatusChanged(this, Stream.Status.Disconnect); // 切断
         }
     }
 }

@@ -19,9 +19,9 @@ namespace ServiceState.Common
          * RECEIVE_IP   :  受信ＩＰ(無指定の場合、localhost)
          * RECEIVE_PORT :  受信ポート(無指定の場合、受信しない)
          */
-        private System.Net.Sockets.UdpClient udpClient = null;
-        private Thread thread = null;
-        private volatile bool shouldStop = false;
+        private System.Net.Sockets.UdpClient m_udpClient = null;
+        private Thread m_thread = null;
+        private volatile bool m_is_running = false;
 
         public UDPStream(IPConfig ipconf)
             : base(ipconf)
@@ -50,8 +50,8 @@ namespace ServiceState.Common
 
                 //UdpClientを作成し、ローカルエンドポイントにバインドする
                 System.Net.IPEndPoint localEP = new System.Net.IPEndPoint(localIP, int.Parse(ipconfig["LOCAL_PORT"]));
-                udpClient = new System.Net.Sockets.UdpClient(localEP);
-                udpClient.Client.ReceiveTimeout = 5*1000;
+                m_udpClient = new System.Net.Sockets.UdpClient(localEP);
+                m_udpClient.Client.ReceiveTimeout = 5*1000;
             }
 
             // 送信設定
@@ -64,9 +64,9 @@ namespace ServiceState.Common
                 }
                 ipconfig["REMOTE_PORT"] = ipconfig["SEND_PORT"];
 
-                if (null == udpClient) // UdpClient生成済みなら生成しない。（これいいかは知らん。。。)
+                if (null == m_udpClient) // UdpClient生成済みなら生成しない。（これいいかは知らん。。。)
                 {
-                    udpClient = new System.Net.Sockets.UdpClient();
+                    m_udpClient = new System.Net.Sockets.UdpClient();
                 }
             }
         }
@@ -78,9 +78,9 @@ namespace ServiceState.Common
                 return;
             }
             
-            thread = new Thread(new ThreadStart(HandleMessage));
-            shouldStop = false;
-            thread.Start();
+            m_thread = new Thread(new ThreadStart(HandleMessage));
+            m_is_running = true;
+            m_thread.Start();
             NotifyStatusChanged(this, Stream.Status.Connect);
 
         }
@@ -91,9 +91,9 @@ namespace ServiceState.Common
             {
                 return;
             }
-            shouldStop = true;
-            thread.Join();
-            thread = null;
+            m_is_running = false;
+            m_thread.Join();
+            m_thread = null;
             NotifyStatusChanged(this, Stream.Status.Disconnect);
         }
 
@@ -103,18 +103,17 @@ namespace ServiceState.Common
             {
                 return;
             }
-            udpClient.Send(bytes, bytes.Length, ipconfig["REMOTE_IP"], int.Parse(ipconfig["REMOTE_PORT"]));
+            m_udpClient.Send(bytes, bytes.Length, ipconfig["REMOTE_IP"], int.Parse(ipconfig["REMOTE_PORT"]));
         }
 
         public void HandleMessage()
         {
-            while (true)
+            while (m_is_running)
             {
-                if (shouldStop) break;
                 try
                 {
                     System.Net.IPEndPoint remoteEP = null;
-                    byte[] rcvBytes = udpClient.Receive(ref remoteEP);
+                    byte[] rcvBytes = m_udpClient.Receive(ref remoteEP);
                     NotifyMessageReceived(this, rcvBytes);
                     // Console.WriteLine("受信したデータ:{0}", rcvBytes);
                 }

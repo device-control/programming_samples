@@ -47,6 +47,7 @@ namespace ServiceState.Service
             tcpServerStream = new Common.TCPServerStream(server_ipconfig);
             tcpServerStream.AddObserver(this);
             tcpServerStream.Open();
+            System.Threading.Thread.Sleep(2 * 1000);
 
             IPConfig client_ipconfig = new IPConfig();
             client_ipconfig["STREAM_NAME"] = "test_tcp_client"; // *ストリーム名
@@ -54,9 +55,15 @@ namespace ServiceState.Service
             client_ipconfig["SEND_PORT"] = "4989"; // 受信ポート(無指定の場合、受信しない)
             tcpClientStream = new Common.TCPClientStream(client_ipconfig);
             tcpClientStream.AddObserver(this);
-
-            System.Threading.Thread.Sleep(1*1000);
             tcpClientStream.Open();
+            System.Threading.Thread.Sleep(2 * 1000);
+
+            // tcpServerStream.Close();
+            //tcpClientStream.Close();
+
+            //System.Threading.Thread.Sleep(10 * 1000);
+            //tcpClientStream.Write(System.Text.Encoding.ASCII.GetBytes("client to serverr"));
+            //tcpServerStream.Write(System.Text.Encoding.ASCII.GetBytes("server to client"));
         }
 
         ~TCPTestService()
@@ -67,16 +74,18 @@ namespace ServiceState.Service
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
+            tcpServerStream.Close();
             tcpClientStream.Close();
         }
 
         void Common.IStreamObserver.StatusChanged(Common.Stream stream, Common.Stream.Status status)
         {
-            Console.WriteLine("status change {0}", status);
+            Console.WriteLine("status change {0} {1}", stream.GetConfig("STREAM_NAME"), status);
         }
 
         void Common.IStreamObserver.MessageReceived(Common.Stream stream, Byte[] bytes)
         {
+            Console.WriteLine("received message {0} {1}", stream.GetConfig("STREAM_NAME"), bytes.Length);
             string name = stream.GetConfig("STREAM_NAME");
 
             Buffer.BlockCopy(bytes, 0, buffers[name], buffersIndex[name], bytes.Length);

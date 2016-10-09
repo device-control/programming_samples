@@ -17,13 +17,11 @@ namespace ServiceState.Common
          * RECEIVE_IP   :  待ち受けＩＰ(無指定の場合、localhost)
          * RECEIVE_PORT :  待ち受けポート
          */
-        private System.Net.Sockets.TcpClient tcpClient = null;
-        private System.Net.Sockets.TcpListener tcpListener = null;
-        private System.Net.Sockets.NetworkStream networkStream = null;
-        private Thread thread = null;
-        private volatile bool shouldStop = false;
-        private volatile bool isOpen = false;
-        private volatile bool connected = false;
+        private System.Net.Sockets.TcpClient m_tcpClient = null;
+        private System.Net.Sockets.TcpListener m_tcpListener = null;
+        private System.Net.Sockets.NetworkStream m_networkStream = null;
+        private Thread m_thread = null;
+        private volatile bool m_is_running = false;
 
         public TCPServerStream(IPConfig ipconf)
             : base(ipconf)
@@ -33,28 +31,26 @@ namespace ServiceState.Common
             System.Net.IPAddress localIP =
                 System.Net.IPAddress.Parse(ipconfig["RECEIVE_IP"]);
             //TcpListenerオブジェクトを作成する
-            tcpListener =
+            m_tcpListener =
                 new System.Net.Sockets.TcpListener(localIP, int.Parse(ipconfig["RECEIVE_PORT"]));
-            //Listenを開始する
-            tcpListener.Start();
         }
 
         public override void Open()
         {
-            if(isOpen) return;
-            thread = new Thread(new ThreadStart(HandleMessage));
-            shouldStop = false;
-            thread.Start();
-            NotifyStatusChanged(this, Stream.Status.Connect);
+            if (m_is_running) return;
+            m_thread = new Thread(new ThreadStart(HandleMessage));
+            m_is_running = true;
+            m_thread.Start();
         }
 
         public override void Close()
         {
-            if (!isOpen) return;
-            shouldStop = true;
-            thread.Join();
-            thread = null;
-            NotifyStatusChanged(this, Stream.Status.Disconnect);
+            if (!m_is_running) return;
+            m_networkStream.Close();
+            m_tcpListener.Stop();
+            m_is_running = false;
+            m_thread.Join();
+            m_thread = null;
         }
 
         public override void Write(byte[] bytes)
@@ -62,7 +58,8 @@ namespace ServiceState.Common
             try
             {
                 //送信
-                networkStream.Write(bytes, 0, bytes.Length);
+                Console.Write("TCPServer Write {0}\n", bytes.ToString());
+                m_networkStream.Write(bytes, 0, bytes.Length);
             }
             catch
             {
@@ -72,33 +69,34 @@ namespace ServiceState.Common
 
         public void HandleMessage()
         {
-            isOpen = true;
             try
             {
-                while(!shouldStop){
+                //Listenを開始する
+                m_tcpListener.Start();
+                while(m_is_running){
                     //接続要求があったら受け入れる
-                    tcpClient = tcpListener.AcceptTcpClient();
+                    m_tcpClient = m_tcpListener.AcceptTcpClient(); // m_tcpListener.Stop() で例外が発行されるはず。
                     //NetworkStreamを取得
-                    networkStream = tcpClient.GetStream();
+                    m_networkStream = m_tcpClient.GetStream();
+                    NotifyStatusChanged(this, Stream.Status.Connect); // 接続完了
                     //読み取り、書き込みのタイムアウトを10秒にする
                     //デフォルトはInfiniteで、タイムアウトしない
                     //(.NET Framework 2.0以上が必要)
-                    networkStream.ReadTimeout = 1000 * 10;
-                    networkStream.WriteTimeout = 1000 * 10;
+                    //m_networkStream.ReadTimeout = 1000 * 1;
+                    //m_networkStream.WriteTimeout = 1000 * 1;
                     
                     byte[] receiveBytes = new byte[64*1024];
                     int receiveSize = 0;
-                    connected = true;
-                    while(connected && !shouldStop)
+                    while(m_is_running)
                     {
                         // 受信待ち
-                        receiveSize = networkStream.Read(receiveBytes, 0, receiveBytes.Length);
+                        receiveSize = m_networkStream.Read(receiveBytes, 0, receiveBytes.Length);
                         //0の場合、タイムアウトかクライアント切断
                         if (receiveSize == 0)
                         {
-                            if( !tcpClient.Connected ) {
+                            if( !m_tcpClient.Connected ) {
                                 // 接続中でないならクライアント切断と判断
-                                connected = false;
+                                break;
                             }
                             // 接続中ならタイムアウト
                             continue;
@@ -107,27 +105,31 @@ namespace ServiceState.Common
                         Buffer.BlockCopy(receiveBytes, 0, buff, 0, receiveSize);
                         NotifyMessageReceived(this, buff);
                     }
-                    networkStream.Close();
-                    networkStream = null;
-                    tcpClient.Close();
-                    tcpClient = null;
+                    m_networkStream.Close();
+                    m_networkStream = null;
+                    m_tcpClient.Close();
+                    m_tcpClient = null;
                 }
+            }
+            catch (System.Net.Sockets.SocketException e)
+            {
+                Console.WriteLine("TCP client error {0}", e.ErrorCode);
             }
             catch
             {
                 Console.WriteLine("TCPサーバーを終了しました");
             }
-            if(null != networkStream)
+            if(null != m_networkStream)
             {
-                networkStream.Close();
-                networkStream = null;
+                m_networkStream.Close();
+                m_networkStream = null;
             }
-            if(null != tcpClient)
+            if(null != m_tcpClient)
             {
-                tcpClient.Close();
-                tcpClient = null;
+                m_tcpClient.Close();
+                m_tcpClient = null;
             }
-            isOpen = false;
+            NotifyStatusChanged(this, Stream.Status.Disconnect); // 切断完了
         }
     }
 }

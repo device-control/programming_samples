@@ -21,7 +21,8 @@ namespace ServiceState.State
 
         public override void EventB(Common.Service service, Common.Event ev)
         {
-            ((Service.TestService)service).SendMessage(System.Text.Encoding.ASCII.GetBytes("exec TestStateB::EventB"));
+            System.Threading.Thread.Sleep(1000 * 1);
+            ((Service.TestService)service).SendMessage(System.Text.Encoding.ASCII.GetBytes("EventC"));
             service.ChangeState("TestStateC");
         }
 

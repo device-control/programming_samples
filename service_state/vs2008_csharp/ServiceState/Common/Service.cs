@@ -15,7 +15,7 @@ namespace ServiceState.Common
         private ManualResetEvent m_my_event = new ManualResetEvent(false);
         
         private Thread m_thread = null;
-        private volatile bool m_shouldStop = false;
+        private volatile bool m_is_running = false;
         private State m_currentState = null;
         
         public string Name { get; set; }
@@ -54,18 +54,18 @@ namespace ServiceState.Common
         {
             m_currentState = FindState(StartStateName);
             m_thread = new Thread(new ThreadStart(HandleEvent));
-            m_shouldStop = false;
+            m_is_running = true;
             m_my_event.Reset();
             m_thread.Start();
         }
 
         public void Stop()
         {
-            if (m_shouldStop)
+            if (!m_is_running)
             {
                 return;
             }
-            m_shouldStop = true;
+            m_is_running = false;
             m_my_event.Set();
             m_thread.Join();
             m_thread = null;
@@ -78,7 +78,7 @@ namespace ServiceState.Common
             {
                 while (m_my_event.WaitOne())
                 {
-                    if (m_shouldStop) {
+                    if (!m_is_running) {
                         break;
                     }
                     
@@ -114,7 +114,6 @@ namespace ServiceState.Common
 
         public State FindState(string name)
         {
-            // if(!m_states.ContainsValue(name)) "ERROR"
             return m_states[name];
         }
 
