@@ -41,8 +41,8 @@ namespace ServiceState
             // TCP テスト
             tcpTestService = new Service.TCPTestService();
             Common.ServiceManager.GetInstance().AddService(tcpTestService);
-            ///tcpTestService.Start();
-            ///tcpTestService.AddEvent(new Common.Event("EventA")); // イベント "EventA" 発行
+            tcpTestService.Start();
+            tcpTestService.AddEvent(new Common.Event("EventA")); // イベント "EventA" 発行
         }
 
         // 「デザイナの表示」を選択しＵＩ画面表示し、表示中の画面でマウス右ボタンメニューから
