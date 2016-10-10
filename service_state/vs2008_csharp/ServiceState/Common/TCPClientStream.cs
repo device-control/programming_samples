@@ -40,7 +40,10 @@ namespace ServiceState.Common
         {
             if(!m_is_running) return;
             //サーバとの接続を終了
-            m_networkStream.Close();
+            if (null != m_networkStream)
+            {
+                m_networkStream.Close();
+            }
             m_is_running = false;
             m_thread.Join();
             m_thread = null;

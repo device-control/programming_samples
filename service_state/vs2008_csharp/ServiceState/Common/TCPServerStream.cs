@@ -46,8 +46,14 @@ namespace ServiceState.Common
         public override void Close()
         {
             if (!m_is_running) return;
-            m_networkStream.Close();
-            m_tcpListener.Stop();
+            if (null != m_networkStream)
+            {
+                m_networkStream.Close();
+            }
+            if (null != m_tcpListener)
+            {
+                m_tcpListener.Stop();
+            }
             m_is_running = false;
             m_thread.Join();
             m_thread = null;
