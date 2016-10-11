@@ -126,10 +126,15 @@ namespace ServiceState.Common
             }
         }
 
-        public void ChangeState(string name)
+        public virtual void ChangeState(string name)
         {
             m_currentState = FindState(name);
             NotifyServiceStateChanged(this, name);
+        }
+
+        public State GetCurrentState()
+        {
+            return m_currentState;
         }
     }
 }
