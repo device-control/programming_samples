@@ -89,6 +89,9 @@ namespace ServiceState.Common
                         //0の場合、タイムアウトかクライアント切断
                         if (receiveSize == 0)
                         {
+                            break;
+                            /*
+                             * タイムアウトを有効にする場合は以下のロジックが必要
                             if (!m_tcpClient.Connected)
                             {
                                 // 接続中でないならクライアント切断と判断
@@ -96,6 +99,7 @@ namespace ServiceState.Common
                             }
                             // 接続中ならタイムアウト
                             continue;
+                             */
                         }
                         byte[] buff = new byte[receiveSize];
                         Buffer.BlockCopy(receiveBytes, 0, buff, 0, receiveSize);

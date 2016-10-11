@@ -46,14 +46,8 @@ namespace ServiceState.Common
         public override void Close()
         {
             if (!m_is_running) return;
-            if (null != m_networkStream)
-            {
-                m_networkStream.Close();
-            }
-            if (null != m_tcpListener)
-            {
-                m_tcpListener.Stop();
-            }
+            m_networkStream.Close();
+            m_tcpListener.Stop();
             m_is_running = false;
             m_thread.Join();
             m_thread = null;
@@ -100,12 +94,16 @@ namespace ServiceState.Common
                         //0の場合、タイムアウトかクライアント切断
                         if (receiveSize == 0)
                         {
+                            break;
+                            /*
+                             * タイムアウトを有効にする場合は、以下のロジックが必要
                             if( !m_tcpClient.Connected ) {
                                 // 接続中でないならクライアント切断と判断
                                 break;
                             }
                             // 接続中ならタイムアウト
                             continue;
+                             */
                         }
                         byte[] buff = new byte[receiveSize];
                         Buffer.BlockCopy(receiveBytes, 0, buff, 0, receiveSize);
