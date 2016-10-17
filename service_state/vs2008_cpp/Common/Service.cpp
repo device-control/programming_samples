@@ -13,6 +13,8 @@ Service::Service()
 ////////////////////////////////////////////////////////////////////////////////
 Service::~Service()
 {
+	close();
+	deleteState();
 	CloseHandle(m_hLoopEventThread);
 }
 
@@ -21,6 +23,7 @@ void Service::open()
 {
 	OutputDebugString(L"サービス開始\n");
 
+	if(m_isOpen) return; // 開始済み
 	// サービス開始
 	m_isOpen = true;
 
@@ -40,6 +43,7 @@ void Service::close()
 {
 	OutputDebugString(L"サービス終了\n");
 
+	if(!m_isOpen) return; // 終了済み
 	// サービス終了
 	m_isOpen = false;
 
@@ -85,6 +89,17 @@ void Service::changeState(std::string stateName)
 void Service::addState(State& state)
 {
 	m_stateMap.insert(std::make_pair(state.getName(), &state));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void Service::deleteState()
+{
+	std::map<std::string, State*>::const_iterator iter = m_stateMap.begin();
+	while(iter != m_stateMap.end()){
+		delete (*iter).second;
+		++iter;
+	}
+	m_stateMap.clear();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

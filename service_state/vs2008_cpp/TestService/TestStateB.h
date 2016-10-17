@@ -6,14 +6,11 @@
 
 class TestStateB
 	: public TestState
-	, public Singleton<TestStateB>
 {
-private:
-	friend class Singleton<TestStateB>;
+public:
 	TestStateB();
 	~TestStateB();
 
-public:
 	virtual void event1(Service& sv, Event& ev);
 	virtual void event2(Service& sv, Event& ev);
 };

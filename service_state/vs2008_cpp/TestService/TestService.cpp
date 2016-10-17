@@ -27,8 +27,8 @@ TestService::~TestService()
 void TestService::initialize()
 {
 	// ó‘Ô“o˜^
-	addState( TestStateA::getInstance() );
-	addState( TestStateB::getInstance() );
+	addState( *(new TestStateA()) );
+	addState( *(new TestStateB()) );
 	// ŠJnó‘Ôİ’è
 	changeState("TestStateA");
 }

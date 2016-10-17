@@ -54,6 +54,8 @@ public:
 protected:
 	// ステート登録
 	void addState(State& state);
+	// 全ステート破棄
+	void deleteState();
 	// ステート検索
 	State* findState(std::string stateName) const;
 
