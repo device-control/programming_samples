@@ -8,16 +8,14 @@
 class TestService
 	: public Service
 	, public ITimerListener
-	, public Singleton<TestService>
 {
 private:
-	friend class Singleton<TestService>;
-	TestService();
-	~TestService();
 	void initialize();
 	virtual void Timeout(std::string name, int sequenceNo);
 protected:
 public:
+	TestService();
+	~TestService();
 	int nextSequenceNo();
 	void setEndEvent();
 	void waitEnd();

@@ -165,6 +165,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ServiceManager.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\State.cpp"
 				>
 			</File>
@@ -200,6 +204,10 @@
 			</File>
 			<File
 				RelativePath=".\Service.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ServiceManager.h"
 				>
 			</File>
 			<File

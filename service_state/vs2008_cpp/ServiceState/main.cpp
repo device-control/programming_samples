@@ -1,5 +1,6 @@
 #include <windows.h>
 #include <stdio.h>
+#include "Common/ServiceManager.h"
 #include "Common/TimerManager.h"
 #include "Common/ITimerListener.h"
 #include "TestService/TestService.h"
@@ -24,9 +25,12 @@ int main()
 		printf("wait %d sec\n", i+1);
 	}
 	//tm.stop();
-
-	TestService& ts = TestService::getInstance();
-	Event ev("event1", ts.nextSequenceNo());
-	ts.addEvent(ev);
+	
+	ServiceManager& sm = *new ServiceManager(); // ServiceManager‚ğ¶¬
+	sm.addService("TestService", *new TestService()); // ServiceManager‚ÉTestService‚ğ“o˜^
+	TestService& ts = *((TestService *)sm.findService("TestService")); // ServiceManager‚É“o˜^‚µ‚½TestService‚ğæ“¾
+	Event ev("event1", ts.nextSequenceNo()); // ƒCƒxƒ“ƒg¶¬
+	sm.addEvent("TestService", ev); // ServiceManagerŒo—R‚ÅƒCƒxƒ“ƒg‚ğ“o˜^
 	ts.waitEnd();
+	delete &sm; // ServiceManager‚ğíœ(service‚ª•Û‚µ‚Ä‚¢‚éstate”jŠüAServiceManager‚ª•Û‚µ‚Ä‚¢‚éservice”jŠüj
 }
