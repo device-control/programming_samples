@@ -3,6 +3,9 @@
 #include <string.h>
 #include <tchar.h>
 
+// 参考サイト
+// https://technet.microsoft.com/ja-jp/library/bb384843(v=vs.100).aspx
+
 // Application name.
 #define APP_NAME "test_window"
 
@@ -51,16 +54,10 @@ int WINAPI WinMain(HINSTANCE hInstance,
     hInst = hInstance; // Store instance handle in our global variable
 
 
-	// デバッグビルドとリリースビルドでウィンドウの生成位置を変える
-#ifdef _DEBUG
-    // デバッグビルドでは画面範囲内にウィンドウを生成する
+    // 画面表示位置設定
 	int x = 0;
 	int y = 100;
-#else
-    // リリースビルドでは画面範囲外にウィンドウを生成する
-	int x = -400;
-	int y = -100;
-#endif
+
     // The parameters to CreateWindow explained:
     // szWindowClass: the name of the application
     // szTitle: the text that appears in the title bar
@@ -76,7 +73,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
         szTitle,
         WS_OVERLAPPEDWINDOW,
         x, y,
-        300, 50,
+        300, 150,
         NULL,
         NULL,
         hInstance,
