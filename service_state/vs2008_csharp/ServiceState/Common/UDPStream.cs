@@ -51,7 +51,7 @@ namespace ServiceState.Common
                 //UdpClientを作成し、ローカルエンドポイントにバインドする
                 System.Net.IPEndPoint localEP = new System.Net.IPEndPoint(localIP, int.Parse(ipconfig["LOCAL_PORT"]));
                 m_udpClient = new System.Net.Sockets.UdpClient(localEP);
-                m_udpClient.Client.ReceiveTimeout = 5*1000;
+                //m_udpClient.Client.ReceiveTimeout = 5*1000;
             }
 
             // 送信設定
@@ -77,9 +77,9 @@ namespace ServiceState.Common
             {
                 return;
             }
-            
-            m_thread = new Thread(new ThreadStart(HandleMessage));
+            if (m_is_running) return;
             m_is_running = true;
+            m_thread = new Thread(new ThreadStart(HandleMessage));
             m_thread.Start();
             NotifyStatusChanged(this, Stream.Status.Connect);
 
@@ -91,7 +91,9 @@ namespace ServiceState.Common
             {
                 return;
             }
+            if (!m_is_running) return;
             m_is_running = false;
+            m_udpClient.Close();
             m_thread.Join();
             m_thread = null;
             NotifyStatusChanged(this, Stream.Status.Disconnect);
@@ -117,14 +119,13 @@ namespace ServiceState.Common
                     NotifyMessageReceived(this, rcvBytes);
                     // Console.WriteLine("受信したデータ:{0}", rcvBytes);
                 }
-                catch (System.Net.Sockets.SocketException ex)
+                catch (System.Net.Sockets.SocketException/* ex*/)
                 {
-                    if (ex.SocketErrorCode == System.Net.Sockets.SocketError.TimedOut)
-                    {
-                        continue;
-                    }
-                    // 異常 ERROR
-                    throw ex;
+                    continue;
+                    //if (ex.SocketErrorCode == System.Net.Sockets.SocketError.TimedOut)
+                    //{
+                    //    continue;
+                    //}
                 }
                 catch (Exception ex)
                 {
