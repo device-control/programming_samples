@@ -8,7 +8,7 @@ namespace ServiceState.Common
     public abstract class State
     {
         public string Name { get; set; }
-        protected State(string name)
+        public State(string name)
         {
             Name = name;
         }
