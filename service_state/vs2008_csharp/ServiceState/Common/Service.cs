@@ -50,7 +50,7 @@ namespace ServiceState.Common
             Stop();
         }
 
-        public void Start()
+        public virtual void Start()
         {
             m_currentState = FindState(StartStateName);
             m_thread = new Thread(new ThreadStart(HandleEvent));
@@ -59,7 +59,7 @@ namespace ServiceState.Common
             m_thread.Start();
         }
 
-        public void Stop()
+        public virtual void Stop()
         {
             if (!m_is_running)
             {
