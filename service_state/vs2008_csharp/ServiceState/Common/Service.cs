@@ -50,25 +50,25 @@ namespace ServiceState.Common
             Stop();
         }
 
-        public virtual void Start()
+        public virtual bool Start()
         {
+            if (m_is_running) return false;
+            m_is_running = true;
             m_currentState = FindState(StartStateName);
             m_thread = new Thread(new ThreadStart(HandleEvent));
-            m_is_running = true;
             m_my_event.Reset();
             m_thread.Start();
+            return true;
         }
 
-        public virtual void Stop()
+        public virtual bool Stop()
         {
-            if (!m_is_running)
-            {
-                return;
-            }
+            if (!m_is_running) return false;
             m_is_running = false;
             m_my_event.Set();
             m_thread.Join();
             m_thread = null;
+            return true;
         }
 
 
