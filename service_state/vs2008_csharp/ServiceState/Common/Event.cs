@@ -8,9 +8,15 @@ namespace ServiceState.Common
     public class Event
     {
         public string Name { get; set; }
-        public string Body { get; set; }
+        public byte[] Body { get; set; }
         
-        protected Event(string name, string body)
+        public Event(string name, string body)
+        {
+            Name = name;
+            Body = System.Text.Encoding.UTF8.GetBytes(body); // UTF8 以外考慮しない
+        }
+
+        public Event(string name, byte[] body)
         {
             Name = name;
             Body = body;
@@ -19,7 +25,7 @@ namespace ServiceState.Common
         public Event(string name)
         {
             Name = name;
-            Body = "";
+            Body = null;
         }
 
     }
