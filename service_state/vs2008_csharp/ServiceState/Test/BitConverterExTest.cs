@@ -61,7 +61,6 @@ namespace ServiceState.Test
 
             // エンディアン変換する
             StructA structA2 = Common.BitConverterEx.ToStruct<StructA>(bytes);
-            // FIXME: structA2,structA3 が同じ内容になるはずだけどならない。助けて。objectとプリミティブの取扱の違いが影響しているっぽい。
             StructA structA3 = Common.BitConverterEx.ChangeEndianStruct<StructA>(structA2);
             
         }

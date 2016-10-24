@@ -302,7 +302,7 @@ namespace ServiceState.Common
                 default:
                     break;
             }
-            
+            object new_obj = Activator.CreateInstance(type);
             foreach (FieldInfo info in fields)
             {
                 Type fieldType = info.FieldType;
@@ -312,23 +312,21 @@ namespace ServiceState.Common
                 {
                     Type array_type = fieldType.GetElementType();
                     int size = ((Array)tmp).Length;
-                    //for (int i = 0; i < size; i++)
-                    //{
-                    //    _ChangeEndianStruct(((Array)tmp).);
-                    //}
                     int index = 0;
-                    foreach (object array_tmp in (Array)tmp) // array_tmp は参照でないので、無理クリ上書き
+                    object new_array = Activator.CreateInstance(fieldType, size); // エンディアン変換後の配列用バッファ生成
+                    foreach (object array_tmp in (Array)tmp)
                     {
                         object val = _ChangeEndianStruct(array_tmp);
-                        ((Array)tmp).SetValue(val, index); 
+                        ((Array)new_array).SetValue(val, index); 
                         index++;
                     }
+                    info.SetValue(new_obj, new_array); // エンディアン変換後の配列用バッファをnew_objに書き出し
                     continue;
                 }
                 object value = _ChangeEndianStruct(tmp);
-                info.SetValue(obj, value);
+                info.SetValue(new_obj, value); // new_objに書き出し
             }
-            return obj;
+            return new_obj;
         }
         
         // メンバー名を取得
