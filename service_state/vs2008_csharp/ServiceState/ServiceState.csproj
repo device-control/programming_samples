@@ -58,6 +58,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Common\BitConverterEx.cs" />
     <Compile Include="Common\Event.cs" />
     <Compile Include="Common\IServiceObserver.cs" />
     <Compile Include="Common\IStreamObserver.cs" />
@@ -100,12 +101,13 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="Service\TCPTestService.cs" />
-    <Compile Include="Service\TestService.cs" />
+    <Compile Include="Service\UDPTestService.cs" />
     <Compile Include="State\TCPTestStateA.cs" />
     <Compile Include="State\TestState.cs" />
-    <Compile Include="State\TestStateA.cs" />
-    <Compile Include="State\TestStateB.cs" />
-    <Compile Include="State\TestStateC.cs" />
+    <Compile Include="State\UDPTestStateA.cs" />
+    <Compile Include="State\UDPTestStateB.cs" />
+    <Compile Include="State\UDPTestStateC.cs" />
+    <Compile Include="Test\BitConverterExTest.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

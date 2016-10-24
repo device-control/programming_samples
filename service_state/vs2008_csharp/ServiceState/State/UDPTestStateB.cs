@@ -5,9 +5,9 @@ using System.Text;
 
 namespace ServiceState.State
 {
-    class TestStateB : TestState
+    class UDPTestStateB : TestState
     {
-        public TestStateB() : base("TestStateB")
+        public UDPTestStateB() : base("TestStateB")
         {
         }
 
@@ -22,7 +22,7 @@ namespace ServiceState.State
         public override void EventB(Common.Service service, Common.Event ev)
         {
             System.Threading.Thread.Sleep(1000 * 1);
-            ((Service.TestService)service).SendMessage(System.Text.Encoding.ASCII.GetBytes("EventC"));
+            ((Service.UDPTestService)service).SendMessage(System.Text.Encoding.ASCII.GetBytes("EventC"));
             service.ChangeState("TestStateC");
         }
 

@@ -11,7 +11,7 @@ namespace ServiceState
 {
     public partial class Form1 : Form, Common.IServiceObserver
     {
-        private Service.TestService testService = null; // new service.TestService();
+        private Service.UDPTestService testService = null; // new service.TestService();
         private Service.TCPTestService tcpTestService = null;
 
         public Form1()
@@ -30,8 +30,11 @@ namespace ServiceState
         // 「プロパティ」を選択。カミナリマークをクリックし「Load」をダブルクリックすると以下のコードが付加される
         private void Form1_Load(object sender, EventArgs e)
         {
+            // Test
+            Test.BitConverterExTest.Test00();
+
             // UDP テスト
-            testService = new Service.TestService();
+            testService = new Service.UDPTestService();
             Common.ServiceManager.GetInstance().AddService(testService);
             testService.AddObserver(this);
             testService.Start();
@@ -43,6 +46,7 @@ namespace ServiceState
             Common.ServiceManager.GetInstance().AddService(tcpTestService);
             tcpTestService.Start();
             tcpTestService.AddEvent(new Common.Event("EventA")); // イベント "EventA" 発行
+
         }
 
         // 「デザイナの表示」を選択しＵＩ画面表示し、表示中の画面でマウス右ボタンメニューから

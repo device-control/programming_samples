@@ -5,16 +5,16 @@ using System.Text;
 
 namespace ServiceState.State
 {
-    class TestStateA : TestState
+    class UDPTestStateA : TestState
     {
-        public TestStateA() : base("TestStateA")
+        public UDPTestStateA() : base("TestStateA")
         {
         }
 
         public override void EventA(Common.Service service, Common.Event ev)
         {
             System.Threading.Thread.Sleep(1000 * 1);
-            ((Service.TestService)service).SendMessage(System.Text.Encoding.ASCII.GetBytes("EventB"));
+            ((Service.UDPTestService)service).SendMessage(System.Text.Encoding.ASCII.GetBytes("EventB"));
             service.ChangeState("TestStateB");
         }
     }

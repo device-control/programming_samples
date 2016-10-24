@@ -7,16 +7,15 @@ namespace ServiceState.Service
 {
     using IPConfig = Dictionary<string, string>;
 
-    class TestService : Common.Service, Common.IStreamObserver
+    class UDPTestService : Common.Service, Common.IStreamObserver
     {
         private Common.UDPStream udpStream = null;
-        public TestService() : base("TestService")
+        public UDPTestService() : base("TestService")
         {
-            AddState(new State.TestStateA());
-            AddState(new State.TestStateB());
-            AddState(new State.TestStateC());
+            AddState(new State.UDPTestStateA());
+            AddState(new State.UDPTestStateB());
+            AddState(new State.UDPTestStateC());
             StartStateName = "TestStateA";
-
             
             IPConfig ipconfig = new IPConfig();
             ipconfig["STREAM_NAME"] = "test_udp_stream"; // *ストリーム名
@@ -30,7 +29,7 @@ namespace ServiceState.Service
             
         }
 
-        ~TestService()
+        ~UDPTestService()
         {
             Dispose(false);
         }

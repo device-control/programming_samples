@@ -209,7 +209,7 @@ namespace ServiceState.Common
         }
 
         // バイト配列から構造体へ
-        static T ToStruct<T>(byte[] bytes)
+        public static T ToStruct<T>(byte[] bytes)
         {
             GCHandle gch = GCHandle.Alloc(bytes, GCHandleType.Pinned);
             T result = (T)Marshal.PtrToStructure(gch.AddrOfPinnedObject(), typeof(T));
@@ -217,19 +217,135 @@ namespace ServiceState.Common
             return result;
         }
 
-        public static List<string> getMembers<T>(T obj)
+        // 構造体のエンディアンを変換する(big->little,little->big)
+        public static T ChangeEndianStruct<T>(T obj)
+        {
+            return (T)_ChangeEndianStruct(obj);
+        }
+        public static object _ChangeEndianStruct(object obj)
+        {
+            Type type = obj.GetType();
+            FieldInfo[] fields = type.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+            TypeCode code = Type.GetTypeCode(type);
+            switch (code)
+            {
+                case TypeCode.Boolean:
+                    // 1byte 何もしない
+                    return obj;
+                case TypeCode.Byte:
+                    // 1byte 何もしない
+                    return obj;
+                case TypeCode.Char:
+                    // 1byte 何もしない
+                    return obj;
+                case TypeCode.Double: // double 8byte
+                    return obj;
+                case TypeCode.Int16: // 2byte
+                    {
+                        byte[] bytes = BitConverter.GetBytes((short)obj);
+                        bytes = bytes.Reverse().ToArray();
+                        //short val = BitConverter.ToInt16(bytes, 0);
+                        //fields[0].SetValue(obj, val);
+                        return BitConverter.ToInt16(bytes, 0);
+                    }
+                case TypeCode.Int32: // 4byte
+                    {
+                        byte[] bytes = BitConverter.GetBytes((int)obj);
+                        bytes = bytes.Reverse().ToArray();
+                        //int val = BitConverter.ToInt32(bytes, 0);
+                        //fields[0].SetValue(obj, val);
+                        return BitConverter.ToInt32(bytes, 0);
+                    }
+                case TypeCode.Int64: // 8byte
+                    {
+                        byte[] bytes = BitConverter.GetBytes((long)obj);
+                        bytes = bytes.Reverse().ToArray();
+                        //long val = BitConverter.ToInt64(bytes, 0);
+                        //fields[0].SetValue(obj, val);
+                        return BitConverter.ToInt64(bytes, 0);
+                    }
+                case TypeCode.SByte:
+                    // 1byte 何もしない
+                    return obj;
+                case TypeCode.Single: // float 4byte
+                    {
+                        byte[] bytes = BitConverter.GetBytes((float)obj);
+                        bytes = bytes.Reverse().ToArray();
+                        //float val = BitConverter.ToSingle(bytes, 0);
+                        //fields[0].SetValue(obj, val);
+                        return BitConverter.ToSingle(bytes, 0);
+                    }
+                case TypeCode.UInt16: // 2byte
+                    {
+                        byte[] bytes = BitConverter.GetBytes((ushort)obj);
+                        bytes = bytes.Reverse().ToArray();
+                        //ushort val = BitConverter.ToUInt16(bytes, 0);
+                        //fields[0].SetValue(obj, val);
+                        return BitConverter.ToUInt16(bytes, 0);
+                    }
+                case TypeCode.UInt32: // 4byte
+                    {
+                        byte[] bytes = BitConverter.GetBytes((uint)obj);
+                        bytes = bytes.Reverse().ToArray();
+                        //uint val = BitConverter.ToUInt32(bytes, 0);
+                        //fields[0].SetValue(obj, val);
+                        return BitConverter.ToUInt32(bytes, 0);
+                    }
+                case TypeCode.UInt64: // 8byte
+                    {
+                        byte[] bytes = BitConverter.GetBytes((ulong)obj);
+                        bytes = bytes.Reverse().ToArray();
+                        //ulong val = BitConverter.ToUInt64(bytes, 0);
+                        //fields[0].SetValue(obj, val);
+                        return BitConverter.ToUInt64(bytes, 0);
+                    }
+                default:
+                    break;
+            }
+            
+            foreach (FieldInfo info in fields)
+            {
+                Type fieldType = info.FieldType;
+                object tmp = info.GetValue(obj);
+                // 配列チェック
+                if (fieldType.IsArray)
+                {
+                    Type array_type = fieldType.GetElementType();
+                    int size = ((Array)tmp).Length;
+                    //for (int i = 0; i < size; i++)
+                    //{
+                    //    _ChangeEndianStruct(((Array)tmp).);
+                    //}
+                    int index = 0;
+                    foreach (object array_tmp in (Array)tmp) // array_tmp は参照でないので、無理クリ上書き
+                    {
+                        object val = _ChangeEndianStruct(array_tmp);
+                        ((Array)tmp).SetValue(val, index); 
+                        index++;
+                    }
+                    continue;
+                }
+                object value = _ChangeEndianStruct(tmp);
+                info.SetValue(obj, value);
+            }
+            return obj;
+        }
+        
+        // メンバー名を取得
+        public static List<string> GetMembers<T>(T obj)
         {
             Type type = obj.GetType();
             Stack<string> stack = new Stack<string>();
-            stack.Push(type.Name);
+            //stack.Push(type.Name);
             List<string> members = new List<string>();
-            getMembers(obj, type, stack, members);
+            GetMembers(obj, type, stack, members);
             return members;
         }
 
-        public static void getMembers(object obj, Type type, Stack<string> stack, List<string> members)
+        public static void GetMembers(object obj, Type type, Stack<string> stack, List<string> members)
         {
             FieldInfo[] fields = type.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+            /*
             if (type.IsArray)
             {
                 Type array_type = type.GetElementType();
@@ -238,12 +354,13 @@ namespace ServiceState.Common
                 foreach (object tmp in (Array)obj)
                 {
                     stack.Push("[" + i + "]");
-                    getMembers(tmp, array_type, stack, members);
+                    GetMembers(tmp, array_type, stack, members);
                     stack.Pop();
                     i++;
                 }
                 return;
             }
+            */
             TypeCode code = Type.GetTypeCode(type);
             if (code == TypeCode.Boolean ||
                 code == TypeCode.Byte ||
@@ -258,26 +375,40 @@ namespace ServiceState.Common
                 code == TypeCode.UInt32 ||
                 code == TypeCode.UInt64)
             {
-                string member_string = "";
+                List<string> _members = new List<string>();
                 foreach (string e in stack)
                 {
-                    member_string += "." + e;
+                    _members.Add(e);
                 }
-                members.Add(member_string);
+                _members.Reverse();
+                string[] string_members = _members.ToArray();
+                string name = string.Join(".", string_members);
+                members.Add(name);
                 return;
             }
 
 
             foreach (FieldInfo info in fields)
             {
-                stack.Push(info.Name);
                 Type fieldType = info.FieldType;
                 object tmp = info.GetValue(obj);
-                //PropertyInfo propertyInfo = type.GetProperty(info.Name);
-                //Array a = (Array)propertyInfo.GetValue(_obj, null);
-
-                //TypeCode code = Type.GetTypeCode(fieldType);
-                getMembers(tmp, fieldType, stack, members);
+                // 配列チェック
+                if (fieldType.IsArray)
+                {
+                    Type array_type = fieldType.GetElementType();
+                    int size = ((Array)tmp).Length;
+                    int i = 0;
+                    foreach (object array_tmp in (Array)tmp)
+                    {
+                        stack.Push(info.Name + "[" + i + "]");
+                        GetMembers(array_tmp, array_type, stack, members);
+                        stack.Pop();
+                        i++;
+                    }
+                    continue;
+                }
+                stack.Push(info.Name);
+                GetMembers(tmp, fieldType, stack, members);
                 stack.Pop();
             }
         }
