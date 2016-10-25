@@ -244,24 +244,18 @@ namespace ServiceState.Common
                     {
                         byte[] bytes = BitConverter.GetBytes((short)obj);
                         bytes = bytes.Reverse().ToArray();
-                        //short val = BitConverter.ToInt16(bytes, 0);
-                        //fields[0].SetValue(obj, val);
                         return BitConverter.ToInt16(bytes, 0);
                     }
                 case TypeCode.Int32: // 4byte
                     {
                         byte[] bytes = BitConverter.GetBytes((int)obj);
                         bytes = bytes.Reverse().ToArray();
-                        //int val = BitConverter.ToInt32(bytes, 0);
-                        //fields[0].SetValue(obj, val);
                         return BitConverter.ToInt32(bytes, 0);
                     }
                 case TypeCode.Int64: // 8byte
                     {
                         byte[] bytes = BitConverter.GetBytes((long)obj);
                         bytes = bytes.Reverse().ToArray();
-                        //long val = BitConverter.ToInt64(bytes, 0);
-                        //fields[0].SetValue(obj, val);
                         return BitConverter.ToInt64(bytes, 0);
                     }
                 case TypeCode.SByte:
@@ -271,32 +265,24 @@ namespace ServiceState.Common
                     {
                         byte[] bytes = BitConverter.GetBytes((float)obj);
                         bytes = bytes.Reverse().ToArray();
-                        //float val = BitConverter.ToSingle(bytes, 0);
-                        //fields[0].SetValue(obj, val);
                         return BitConverter.ToSingle(bytes, 0);
                     }
                 case TypeCode.UInt16: // 2byte
                     {
                         byte[] bytes = BitConverter.GetBytes((ushort)obj);
                         bytes = bytes.Reverse().ToArray();
-                        //ushort val = BitConverter.ToUInt16(bytes, 0);
-                        //fields[0].SetValue(obj, val);
                         return BitConverter.ToUInt16(bytes, 0);
                     }
                 case TypeCode.UInt32: // 4byte
                     {
                         byte[] bytes = BitConverter.GetBytes((uint)obj);
                         bytes = bytes.Reverse().ToArray();
-                        //uint val = BitConverter.ToUInt32(bytes, 0);
-                        //fields[0].SetValue(obj, val);
                         return BitConverter.ToUInt32(bytes, 0);
                     }
                 case TypeCode.UInt64: // 8byte
                     {
                         byte[] bytes = BitConverter.GetBytes((ulong)obj);
                         bytes = bytes.Reverse().ToArray();
-                        //ulong val = BitConverter.ToUInt64(bytes, 0);
-                        //fields[0].SetValue(obj, val);
                         return BitConverter.ToUInt64(bytes, 0);
                     }
                 default:
@@ -332,33 +318,18 @@ namespace ServiceState.Common
         // メンバー名を取得
         public static List<string> GetMembers<T>(T obj)
         {
-            Type type = obj.GetType();
             Stack<string> stack = new Stack<string>();
             //stack.Push(type.Name);
             List<string> members = new List<string>();
-            GetMembers(obj, type, stack, members);
+            GetMembers(obj, stack, members);
             return members;
         }
 
-        public static void GetMembers(object obj, Type type, Stack<string> stack, List<string> members)
+        public static void GetMembers(object obj, Stack<string> stack, List<string> members)
         {
+            Type type = obj.GetType();
             FieldInfo[] fields = type.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-            /*
-            if (type.IsArray)
-            {
-                Type array_type = type.GetElementType();
-                int size = ((Array)obj).Length;
-                int i = 0;
-                foreach (object tmp in (Array)obj)
-                {
-                    stack.Push("[" + i + "]");
-                    GetMembers(tmp, array_type, stack, members);
-                    stack.Pop();
-                    i++;
-                }
-                return;
-            }
-            */
+
             TypeCode code = Type.GetTypeCode(type);
             if (code == TypeCode.Boolean ||
                 code == TypeCode.Byte ||
@@ -399,14 +370,14 @@ namespace ServiceState.Common
                     foreach (object array_tmp in (Array)tmp)
                     {
                         stack.Push(info.Name + "[" + i + "]");
-                        GetMembers(array_tmp, array_type, stack, members);
+                        GetMembers(array_tmp, stack, members);
                         stack.Pop();
                         i++;
                     }
                     continue;
                 }
                 stack.Push(info.Name);
-                GetMembers(tmp, fieldType, stack, members);
+                GetMembers(tmp, stack, members);
                 stack.Pop();
             }
         }

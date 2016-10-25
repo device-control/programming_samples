@@ -65,16 +65,6 @@ namespace ServiceState
         void Common.IServiceObserver.StateChanged(Common.Service service, string stateName)
         {
             Console.WriteLine("StateChanged {0} {1}", service.Name, stateName);
-            /*
-            if (stateName == "TestStateB")
-            {
-                testService.AddEvent(new Common.Event("EventB"));
-            }
-            if (stateName == "TestStateC")
-            {
-                testService.AddEvent(new Common.Event("EventC"));
-            }
-             * */
         }
     }
 }
