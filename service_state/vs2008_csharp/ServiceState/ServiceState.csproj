@@ -62,6 +62,7 @@
     <Compile Include="Common\Event.cs" />
     <Compile Include="Common\IServiceObserver.cs" />
     <Compile Include="Common\IStreamObserver.cs" />
+    <Compile Include="Common\ReaderIni.cs" />
     <Compile Include="Common\Service.cs" />
     <Compile Include="Common\ServiceManager.cs" />
     <Compile Include="Common\ServiceObservable.cs" />
