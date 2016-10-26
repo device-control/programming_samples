@@ -218,7 +218,7 @@ namespace ServiceState.Common
         }
 
         // 構造体のエンディアンを変換する(big->little,little->big)
-        public static T ChangeEndianStruct<T>(T obj)
+        public static T StructEndianConvert<T>(T obj)
         {
             return (T)_ChangeEndianStruct(obj);
         }

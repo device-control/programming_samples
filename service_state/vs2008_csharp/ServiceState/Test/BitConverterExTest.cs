@@ -61,7 +61,7 @@ namespace ServiceState.Test
 
             // エンディアン変換する
             StructA structA2 = Common.BitConverterEx.ToStruct<StructA>(bytes);
-            StructA structA3 = Common.BitConverterEx.ChangeEndianStruct<StructA>(structA2);
+            StructA structA3 = Common.BitConverterEx.StructEndianConvert<StructA>(structA2);
             
         }
 
