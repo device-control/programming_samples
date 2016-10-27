@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -380,6 +381,19 @@ namespace ServiceState.Common
                 GetMembers(tmp, stack, members);
                 stack.Pop();
             }
+        }
+
+        // 文字列の"00 01 02 03..." をバイト配列の{ 0x00, 0x01, 0x02, 0x03...} に変換
+        public static byte[] ConvertToBytesFromString(string message)
+        {
+            MemoryStream ms = new MemoryStream();
+            string[] messages = message.Split(' ');
+            foreach (String hex in messages)
+            {
+                byte b1 = Convert.ToByte(hex, 16);
+                ms.WriteByte(b1);
+            }
+            return ms.ToArray();
         }
 
         private static byte[] GetSubArray(byte[] src, int startIndex, int count)
