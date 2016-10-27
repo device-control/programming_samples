@@ -7,6 +7,34 @@ using System.Runtime.InteropServices;
 
 namespace ServiceState.Common
 {
+    /*
+    利用方法は以下の通り
+    
+    class DummyStruct : MessageBase<DummyStruct.StructDummy_>
+    {
+        [StructLayout(LayoutKind.Sequential, Pack = 11)]
+        public struct StructDummy_
+        {
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 2)] // 4byte
+            public short[] m_short;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1)] // 4byte
+            public int[] m_int;
+        }
+        // 空のDummyStructインスタンスを生成したいなら配列要素だけ自分で埋めること
+        public DummyStruct()
+        {
+            // 配列だけ大きさを合わせておく
+            Members.m_short = new short[2];
+            Members.m_int = new int[1]
+
+        }
+        // 引数付のコンストラクタを利用したい場合は以下のようにする
+        public DummyStruct(byte[] bytes, bool isEndianConvert)
+            : base(bytes,isEndianConvert)
+        {
+        }
+    */
+
     class MessageBase<T>
     {
         public T Members;
