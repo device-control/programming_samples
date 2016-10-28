@@ -34,6 +34,7 @@ int main()
 			printf("[%d]ˆÙí\n", i);
 		}
 	}
+	delete &cp;
 
 	MockTimerLisener timerLisener;
 	printf("timer start\n");

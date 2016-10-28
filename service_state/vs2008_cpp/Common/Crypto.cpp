@@ -7,12 +7,23 @@
 #define KEYLENGTH_128 (0x0080 * 0x10000) // 128-bit長
 
 ///////////////////////////////////////////////////////////////////////////////
-Crypto::Crypto(const std::string& password)
+Crypto::Crypto(const std::string& password, DWORD max_length/*= 4096*/)
 	: m_password(password)
+	, m_max_length(max_length)
+	, m_pBuffer(NULL)
 	, m_hProv(NULL)
 	, m_hHash(NULL)
 	, m_hKey(NULL)
 {
+	m_pBuffer = new BYTE[m_max_length];
+	if( 0 != Initilize() ){
+		// 異常
+	}
+}
+
+int Crypto::Initilize()
+{
+
 	if(!CryptAcquireContext(
 		&m_hProv, // CSP ハンドル
 		NULL, // キーコンテナ名
@@ -21,6 +32,7 @@ Crypto::Crypto(const std::string& password)
 		CRYPT_VERIFYCONTEXT // 特定の鍵コンテナをオープンせずにCSPのハンドルを取得
 		) ) {
 		//printf("ERROR:CryptAcquireContext()\n");
+		return 1;
 	}
 	
 	//	ハッシュ計算
@@ -32,16 +44,18 @@ Crypto::Crypto(const std::string& password)
 		&m_hHash // ハッシュオブジェクト
 		) ) {
 		//printf("ERROR:CryptCreateHash()\n");
+		return 2;
 	}
 
 	//	ハッシュ値の計算
 	if(!CryptHashData(
 		m_hHash, // ハッシュ ハンドル
 		(BYTE*)m_password.c_str(), 
-		(DWORD)m_password.size() - 1, 
+		(DWORD)m_password.size(), 
 		0 // フラグ
 		) ) {
 		//printf("ERROR:CryptHashData()\n");
+		return 3;
 	}
 	
 	//	鍵生成
@@ -53,12 +67,22 @@ Crypto::Crypto(const std::string& password)
 		&m_hKey
 		) ) {
 		//printf("ERROR:CryptDeriveKey()\n");
+		return 4;
 	}
+	return 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 Crypto::~Crypto()
 {
+	if(m_pBuffer){
+		delete m_pBuffer;
+		m_pBuffer = NULL;
+	}
+	if(m_hKey){
+		CryptDestroyKey(m_hKey);
+		m_hKey = NULL;
+	}
 	if(m_hHash){
 		CryptDestroyHash(m_hHash);
 		m_hHash = NULL;
@@ -73,15 +97,13 @@ Crypto::~Crypto()
 bool Crypto::enc(const std::string& in, std::string& enc)
 {
 	DWORD length = in.size();
-	if( length >= 2048 ) return false;
-	BYTE buffer[2048+1];
-	memcpy(buffer, in.c_str(), length);
-	length += 1; // ＋１する理由は不明。サンプルのままとしておく
-	if( !CryptEncrypt(m_hKey, 0, TRUE, 0, buffer, &length, 2048+1) ){
+	if( length >= m_max_length ) return false;
+	memcpy(m_pBuffer, in.c_str(), length);
+	if( !CryptEncrypt(m_hKey, 0, TRUE, 0, m_pBuffer, &length, m_max_length) ){
 		//printf("ERROR: CryptEncrypt()\n");
 		return false;
 	}
-	enc = std::string((char*)buffer, length);
+	enc = std::string((char*)m_pBuffer, length);
 	return true;
 }
 
@@ -89,15 +111,14 @@ bool Crypto::enc(const std::string& in, std::string& enc)
 bool Crypto::dec(const std::string& in, std::string& dec)
 {
 	DWORD length = in.size();
-	if( length >= 2048 ) return false;
-	BYTE buffer[2048+1];
-	memcpy(buffer, in.c_str(), length);
+	if( length >= m_max_length ) return false;
+	memcpy(m_pBuffer, in.c_str(), length);
 
-	if(!CryptDecrypt(m_hKey, 0, TRUE, 0, buffer, &length)) {
+	if(!CryptDecrypt(m_hKey, 0, TRUE, 0, m_pBuffer, &length)) {
 		//printf("ERROR: CryptDecrypt()\n");
 		return false;
 	}
-	dec = std::string((char*)buffer, length - 1);
+	dec = std::string((char*)m_pBuffer, length);
 	return true;
 }
 
