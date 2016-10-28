@@ -32,7 +32,7 @@ namespace ServiceState
         {
             // Test
             Test.BitConverterExTest.Test00();
-            Test.MessageStructTest.Test00();
+            Test.StructBaseTest.Test00();
 
             // UDP テスト
             testService = new Service.UDPTestService();

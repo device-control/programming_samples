@@ -7,9 +7,9 @@ using System.IO;
 
 namespace ServiceState.Test
 {
-    static class MessageStructTest
+    static class StructBaseTest
     {
-        class DummyStruct : Common.MessageBase<DummyStruct.DummyStruct_>
+        class DummyStruct : Common.StructBase<DummyStruct.DummyStruct_>
         {
             [StructLayout(LayoutKind.Sequential, Pack = 1)]
             public struct DummyStruct_

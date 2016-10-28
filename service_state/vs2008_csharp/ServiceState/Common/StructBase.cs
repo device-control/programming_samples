@@ -35,27 +35,27 @@ namespace ServiceState.Common
         }
     */
 
-    class MessageBase<T>
+    class StructBase<T>
     {
         public T Members;
 
-        public MessageBase(T members)
+        public StructBase(T members)
         {
             Members = members;
         }
 
-        public MessageBase()
+        public StructBase()
         {
         }
 
         // バイト列を構造体に設定する
-        public MessageBase(byte[] bytes)
+        public StructBase(byte[] bytes)
         {
             Members = ServiceState.Common.BitConverterEx.ToStruct<T>(bytes);
         }
 
         // isEndianConvert==trueの場合、big endian のバイト列を little endian に変換し構造体に設定する
-        public MessageBase(byte[] bytes, bool isEndianConvert/*=false*/) // TODO: C#4.0からデフォルト引数対応
+        public StructBase(byte[] bytes, bool isEndianConvert/*=false*/) // TODO: C#4.0からデフォルト引数対応
         {
             if (isEndianConvert)
             {
@@ -68,7 +68,7 @@ namespace ServiceState.Common
         }
 
         // message = "00 01 02 03 ..." の文字列をバイト配列に変換し構造体に設定する
-        public MessageBase(string message, bool isEndianConvert/*=false*/)
+        public StructBase(string message, bool isEndianConvert/*=false*/)
         {
             MemoryStream ms = new MemoryStream();
             string[] messages = message.Split(' ');
