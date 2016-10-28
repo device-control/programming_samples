@@ -4,6 +4,7 @@
 #include "Common/TimerManager.h"
 #include "Common/ITimerListener.h"
 #include "TestService/TestService.h"
+#include "Common/Crypto.h"
 
 class MockTimerLisener: public ITimerListener
 {
@@ -15,6 +16,25 @@ class MockTimerLisener: public ITimerListener
 
 int main()
 {
+	// ˆÃ†‰»^•¡‡‰»
+	Crypto& cp = *new Crypto("test");
+	std::string tbl[] = {
+		"123456789",
+		"•\¦”\—Í‡@‡A‡B",
+		"•\1¦2”\3—Í4",
+	};
+	int tbl_max = sizeof(tbl) / sizeof(tbl[0]);
+	for(int i=0;i<tbl_max;i++){
+		std::string hirabun = tbl[i];
+		std::string enc;
+		cp.enc(hirabun, enc);
+		std::string dec;
+		cp.dec(enc, dec);
+		if( hirabun != dec ){
+			printf("[%d]ˆÙí\n", i);
+		}
+	}
+
 	MockTimerLisener timerLisener;
 	printf("timer start\n");
 	TimerManager& tm = TimerManager::getInstance();
