@@ -23,19 +23,22 @@ Crypto::Crypto(const std::string& password, DWORD max_length/*= 4096*/)
 
 int Crypto::Initilize()
 {
-
+	/// http://www.trustss.co.jp/smnEncrypt010.html
+	/// CryptoAPIで暗号化・復号の処理をするには、CSP（CryptoGraphy Service Provider）という仕組みを利用
+	// 
 	if(!CryptAcquireContext(
 		&m_hProv, // CSP ハンドル
 		NULL, // キーコンテナ名
-		MS_ENHANCED_PROV, // CSP名
+		MS_ENHANCED_PROV, // CSP名（MS_DEF_PROVでもいいかも)
 		PROV_RSA_FULL, // プロバイダタイプ 
-		CRYPT_VERIFYCONTEXT // 特定の鍵コンテナをオープンせずにCSPのハンドルを取得
+		CRYPT_VERIFYCONTEXT // 特定の鍵コンテナをオープンせずにCSPのハンドルを取得(共通鍵暗号のため0を指定してキーコンテナーの存在チェックはしない）
 		) ) {
 		//printf("ERROR:CryptAcquireContext()\n");
 		return 1;
 	}
 	
-	//	ハッシュ計算
+	/// パスワードからハッシュ値を計算し、その結果を鍵の種として利用
+	// ハッシュ計算
 	if(!CryptCreateHash(
 		m_hProv, // CSP ハンドル
 		CALG_SHA, // ハッシュアルゴリズム
@@ -46,8 +49,7 @@ int Crypto::Initilize()
 		//printf("ERROR:CryptCreateHash()\n");
 		return 2;
 	}
-
-	//	ハッシュ値の計算
+	// ハッシュ値の計算
 	if(!CryptHashData(
 		m_hHash, // ハッシュ ハンドル
 		(BYTE*)m_password.c_str(), 
@@ -58,7 +60,7 @@ int Crypto::Initilize()
 		return 3;
 	}
 	
-	//	鍵生成
+	// 鍵生成
 	if(!CryptDeriveKey(
 		m_hProv, 
 		CALG_RC4, 
