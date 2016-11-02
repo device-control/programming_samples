@@ -26,16 +26,10 @@ Time::Time(const char* pStr)
 }
 
 Time::Time(int hour, int minute, int second)
-	: m_hour(hour)
-	, m_minute(minute)
-	, m_second(second)
 {
-	/* 丸め込み処理 必要かな。。。２倍以上の場合上手くいかないな。。。
-	m_minute += (m_second / 60);
-	m_hour += (m_minute / 60);
-	m_second = (m_second >= 60)? (m_second % 60) : m_second;
-	m_minute = (m_minute >= 60)? (m_minute % 60) : m_minute;
-	*/
+	if( !set(hour, minute, second) ){
+		throw std::runtime_error("Time::Time(int hour, int minute, int second) illegal format");
+	}
 }
 
 bool Time::set(int i)
@@ -52,6 +46,12 @@ bool Time::set(int h, int m, int s)
 	m_hour = h;
 	m_minute = m;
 	m_second = s;
+	/* 丸め込み処理 必要かな。。。
+	m_minute += (m_second / 60);
+	m_hour += (m_minute / 60);
+	m_second = (m_second >= 60)? (m_second % 60) : m_second;
+	m_minute = (m_minute >= 60)? (m_minute % 60) : m_minute;
+	*/
 	return true;
 }
 
