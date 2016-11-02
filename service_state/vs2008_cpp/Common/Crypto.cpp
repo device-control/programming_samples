@@ -3,6 +3,10 @@
 #include <string>
 #include "Crypto.h"
 
+// TODO: CryptoManagerクラスを新設して、指定された暗号化方式のCryptoインスタンスを生成する
+//       Crypto インスタンスには、対称／非対称とわず鍵（公開／秘密）のエクスポート、インポートができるようにする
+//       Crypto <- CryptoXXX のように継承する。利用者側は Crypto クラスのインターフェースのみで暗号化／複合化を行う
+//       ようにしたい
 
 #define KEYLENGTH_128 (0x0080 * 0x10000) // 128-bit長
 

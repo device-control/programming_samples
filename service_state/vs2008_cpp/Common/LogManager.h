@@ -21,7 +21,10 @@ public:
 	virtual ~LogManager();
 	std::string getFileName();
 	std::vector<std::string> getFileList();
-	void deleteFiles(int days);
+	int dayRetentionOf(int days);
+	static bool createDirectory(const char* pPath);
+	static bool deleteDirectory(const char* pPath);
+	static std::vector<std::string> split(const std::string &str, char sep='\\');
 protected:
 	// コンストラクタ
 	LogManager();

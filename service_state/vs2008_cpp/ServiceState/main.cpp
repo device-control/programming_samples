@@ -1,6 +1,5 @@
 #include <windows.h>
 #include <stdio.h>
-#include <direct.h>
 #include <process.h>
 #include "Common/ServiceManager.h"
 #include "Common/TimerManager.h"
@@ -43,12 +42,15 @@ int main()
 	// Dateクラス実験
 	//std::string& st = std::string("test");
 	Date now = Date::getToday();
+	int dayOfWeek = Date::getDayOfWeek(2016,10,30);
+	if( dayOfWeek == 1/*火*/ ){
+		printf("2016/11/1 == 火曜日 OK\n");
+	}
 	Date d1(2014,1,1);
 	Date d2 = d1 - 1; // =2013/12/31
 	if( d1 > d2 ){
 		printf("2014/1/1 > 2013/12/31 OK");
 	}
-
 	if( d2 == Date(2013,12,31) ){
 		printf("==2013/12/31 OK\n");
 	}
@@ -65,19 +67,57 @@ int main()
 		printf("2014/01/01 OK\n");
 	}
 
-	// 結果が1970年以降でないと動作しない。。。
-	Date d4 = d1 - (356*44); // 1971年
-	Date d5 = d1 - (356*45); // 1970年
 	try{
-		Date d6 = d1 - (356*46); // 1969年 ここで失敗する
+		// mktime() なら結果が1970年以降でないと動作しない。。。
+		Date d4 = d1 - (356*44); // 1971年
+		Date d5 = d1 - (356*45); // 1970年
+		Date d6 = d1 - (356*46); // 1969年 mktime() はここで失敗する
 	}
 	catch(std::out_of_range e){
 		printf("%s\n", e.what());
 	}
 	Date d7 = d2 + (365*100); // 100年後(2038年問題は64bitだと問題ないかも。。。)
+	// 2200/12/31 まで経過日数が+1されていくか確認。ついでに曜日も確認してみる
+	{
+		//int d0 = Date::getDays(2000,1,1) - Date::getDays(1900,1,1);
+		// 1582年10月4日まではユリウス暦、次の日(10月15日)からはグレゴリオ暦 とするべきだけど、面倒なんでグレゴリオ暦で計算
+		// Dateクラス自体は 1900年以降を保証できれば十分なため。
+		int days = Date::getDays(1900,1,1);
+		Date dc = Date(1900,1,1); 
+		int dayOfWeek = Date::getDayOfWeek(1900,1,1); // 月曜日
+		for(int y=1900;y<=2200;y++){
+			for(int m=1;m<=12;m++){
+				int daysInMonth = Date::getDaysInMonth(y,m);
+				for(int d=1;d<=daysInMonth;d++){
+					int _days = Date::getDays(y,m,d);
+					int _dayOfWeek = Date::getDayOfWeek(y,m,d);
+					if( days != _days ){
+						printf("days異常\n");
+					}
+					if( dayOfWeek != _dayOfWeek ){
+						printf("dayOfWeek異常\n");
+					}
+					int _days2 = dc.getDays();
+					if( days != _days2){
+						printf("days2異常\n");
+					}
+					int _days3 = Date::toInt(y,m,d);
+					if( _days != _days3 ){
+						printf("days3異常\n");
+					}
+					days++;
+					dc++;
+					dayOfWeek++;
+					dayOfWeek%=7;
+				}
+			}
+		}
+	}
 
 	// LogManagerクラス実験
-	_mkdir("log");
+	LogManager::createDirectory("log"); // dummy directorys
+	LogManager::createDirectory("log\\test00");
+	LogManager::createDirectory("log\\test01\\test222");
 	system("echo 0 >> log\\20171101.log"); // 1年未来
 	system("echo 1 >> log\\20161031.log");
 	system("echo 2 >> log\\20161030.log");
@@ -85,12 +125,15 @@ int main()
 	system("echo 4 >> log\\20161028.log");
 	system("echo 4 >> log\\20161027.log");
 	system("echo 4 >> log\\20151101.log"); // １年前
-	LogManager& lm = *new LogManager("2016/11/1", "log");
+	LogManager& lm = *new LogManager("2016/11/1", "log"); // ログ作成日, ログ出力先
 	std::string fileName = lm.getFileName();
 	std::vector<std::string> list = lm.getFileList();
-	lm.deleteFiles(3); // 指定引数「3」とは当日の除いて３日間のログを保持。それより過去は削除
+	lm.dayRetentionOf(3); // 指定引数「3」とは当日の除いて３日間のログを保持。それより過去は削除
 	std::vector<std::string> list2 = lm.getFileList();
+	// TODO: logファイルにテスト書き出し
+
 	delete &lm;
+	LogManager::deleteDirectory("log"); // logフォルダ丸ごと削除
 
 	MockTimerLisener timerLisener;
 	printf("timer start\n");
