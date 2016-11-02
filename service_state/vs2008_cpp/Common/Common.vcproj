@@ -189,6 +189,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Time.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\TimerManager.cpp"
 				>
 			</File>
@@ -248,6 +252,10 @@
 			</File>
 			<File
 				RelativePath=".\ThreadLocker.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Time.h"
 				>
 			</File>
 			<File
