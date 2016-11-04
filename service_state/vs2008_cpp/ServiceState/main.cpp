@@ -115,31 +115,36 @@ int main()
 		}
 	}
 
-	// LogManagerクラス実験
-	LogManager::createDirectory("log"); // dummy directorys
-	LogManager::createDirectory("log\\test00");
-	LogManager::createDirectory("log\\test01\\test222");
-	system("echo 0 >> log\\20171101.log"); // 1年未来
-	system("echo 1 >> log\\20161031.log");
-	system("echo 2 >> log\\20161030.log");
-	system("echo 3 >> log\\20161029.log");
-	system("echo 4 >> log\\20161028.log");
-	system("echo 4 >> log\\20161027.log");
-	system("echo 4 >> log\\20151101.log"); // １年前
-	LogManager& lm = *new LogManager("2016/11/1", "log"); // ログ作成日, ログ出力先
-	std::string fileName = lm.getFileName();
-	LogFile& log = *new LogFile(fileName.c_str());
-	log.open();
-	log.write(0, "%d:%s\n", 0x1000, "test");
-	log.close();
-	delete &log;
-	std::vector<std::string> list = lm.getFileList();
-	lm.dayRetentionOf(3); // 指定引数「3」とは当日の除いて３日間のログを保持。それより過去は削除
-	std::vector<std::string> list2 = lm.getFileList();
-	// TODO: logファイルにテスト書き出し
+	{
+		// LogManagerクラス実験
+		LogManager::createDirectory("log"); // dummy directorys
+		LogManager::createDirectory("log\\test00");
+		LogManager::createDirectory("log\\test01\\test222");
+		system("echo 0 >> log\\20171101.log"); // 1年未来
+		system("echo 1 >> log\\20161031.log");
+		system("echo 2 >> log\\20161030.log");
+		system("echo 3 >> log\\20161029.log");
+		system("echo 4 >> log\\20161028.log");
+		system("echo 4 >> log\\20161027.log");
+		system("echo 4 >> log\\20151101.log"); // １年前
+		LogManager& lm = *new LogManager("2016/11/1", "log"); // ログ作成日, ログ出力先
+		std::string fileName = lm.getFileName();
+		std::vector<std::string> list = lm.getFileList();
+		lm.dayRetentionOf(3); // 指定引数「3」とは当日の除いて３日間のログを保持。それより過去は削除
+		std::vector<std::string> list2 = lm.getFileList();
+		// TODO: logファイルにテスト書き出し
+		Crypto& cp = *new Crypto("test");
+		LogFile& log = *new LogFile(fileName.c_str());
+		log.setCrypto(cp); // cp 管理は log が行う（delete は Log)
+		log.open();
+		log.write(Log::LEVEL_SYSTEM, "%d:%s\n", 0x1000, "test");
+		log.close();
+		delete &log;
 
-	delete &lm;
-	LogManager::deleteDirectory("log"); // logフォルダ丸ごと削除
+		
+		delete &lm;
+		LogManager::deleteDirectory("log"); // logフォルダ丸ごと削除
+	}
 
 	MockTimerLisener timerLisener;
 	printf("timer start\n");

@@ -7,7 +7,7 @@
 #include "Log.h"
 #include "switchport.h"
 
-class API LogFile : Log
+class API LogFile : public Log
 {
 private:
 	std::FILE* m_pFile;

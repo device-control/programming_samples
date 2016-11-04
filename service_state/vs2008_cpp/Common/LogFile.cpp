@@ -22,7 +22,7 @@ bool LogFile::open()
 	}
 	// https://msdn.microsoft.com/ja-jp/library/8f30b0db.aspx
 	// a : ファイルの末尾への書き込み用にファイルを開きます (追加モード)。ファイルが存在しない場合は、まず、ファイルを作成します。
-	m_pFile = _fsopen(m_path.c_str(), "a", _SH_DENYWR);
+	m_pFile = _fsopen(m_path.c_str(), "ab", _SH_DENYWR);
 	if (NULL != m_pFile) {
 		return true;
 	}
@@ -48,7 +48,18 @@ bool LogFile::write(unsigned int level,  const char* format, ...)
     allocatedBuffer = new char [len + 1];
 	int size = vsprintf_s(allocatedBuffer, len + 1, format, ap);
     va_end(ap);
-	size_t numWrote = fprintf(m_pFile, allocatedBuffer);
+	if( m_pCrypto ){
+		// 暗号化が設定された場合
+		std::string in(allocatedBuffer);
+		std::string out;
+		m_pCrypto->enc(in,out);
+		int size = out.size();
+		fwrite(&size, sizeof(int), 1, m_pFile);
+		fwrite(out.c_str(), sizeof(char), out.size(), m_pFile);
+	}
+	else{
+		fprintf(m_pFile, allocatedBuffer);
+	}
     free(allocatedBuffer);
 	return true;
 }

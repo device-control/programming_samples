@@ -3,10 +3,12 @@
 
 #include <windows.h>
 #include <string>
+#include "Crypto.h"
 #include "switchport.h"
 
 class API Log
 {
+public:
 	static const unsigned int LEVEL_SYSTEM;   // 0x00000001 システムで表示すると決めたもの
 	static const unsigned int LEVEL_ERROR;    // 0x00000002 エラー発生
 	static const unsigned int LEVEL_WARRNING; // 0x00000004 ワーニング発生   (リリースビルド時は必ずＯＦＦにする運用とかがいい)
@@ -15,6 +17,7 @@ class API Log
 protected:
 	CRITICAL_SECTION m_locker;
 	unsigned int m_level;
+	Crypto* m_pCrypto;
 public:
 	// コンストラクタ
 	Log();
@@ -24,6 +27,7 @@ public:
 	virtual bool write(unsigned int level,  const char* format, ...);
 	virtual bool close();
 	void setLevel(unsigned int level);
+	void setCrypto(Crypto& crypto);
 };
 
 #endif	// _LOG_H_
