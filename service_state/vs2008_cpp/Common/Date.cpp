@@ -10,6 +10,7 @@
 // 面倒なんでグレゴリオ暦で計算。Dateクラス自体は 1900年以降を保証できれば十分。
 // ただし、日付の減算処理は、mktime()を利用しているため 1970年以降でないと正しく処理できない
 // 愚直に計算するバージョンなら1900年より過去でも問題ないはず。
+#undef USE_MKTIME // 今は愚直版を利用しておく
 
 /*static */
 const int Date::DAYS_PER_MONTH[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
@@ -75,7 +76,7 @@ void Date::addDays(int days)
 		throw std::runtime_error("void Date::addDays(int days) illegal format");
 	}
 
-#if 0 /* use mktime() */
+#ifdef USE_MKTIME /* use mktime() */
 	struct tm t = { 0 };
 
 	t.tm_year = m_year - 1900;
