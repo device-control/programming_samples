@@ -8,6 +8,7 @@
 #include "Common/Crypto.h"
 #include "Common/Date.h"
 #include "Common/LogManager.h"
+#include "Common/LogFile.h"
 
 class MockTimerLisener: public ITimerListener
 {
@@ -127,6 +128,11 @@ int main()
 	system("echo 4 >> log\\20151101.log"); // １年前
 	LogManager& lm = *new LogManager("2016/11/1", "log"); // ログ作成日, ログ出力先
 	std::string fileName = lm.getFileName();
+	LogFile& log = *new LogFile(fileName.c_str());
+	log.open();
+	log.write(0, "%d:%s\n", 0x1000, "test");
+	log.close();
+	delete &log;
 	std::vector<std::string> list = lm.getFileList();
 	lm.dayRetentionOf(3); // 指定引数「3」とは当日の除いて３日間のログを保持。それより過去は削除
 	std::vector<std::string> list2 = lm.getFileList();

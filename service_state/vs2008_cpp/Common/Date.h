@@ -18,7 +18,8 @@ public:
     Date (int y, int m, int d);
 	Date(const char* pStr); // "Y4/M2/D2"
     ~Date ();
-	bool setY4M4D2(const char* pStr); // "Y4/M2/D2"
+	bool set(int y, int m, int d);
+	bool set(const char* pStr); // "Y4/M2/D2"
 	void addDays(int days);
 	bool isValid() const;
 	int getDays() const;

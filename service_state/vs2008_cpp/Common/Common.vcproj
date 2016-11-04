@@ -169,6 +169,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Log.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\LogFile.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\LogManager.cpp"
 				>
 			</File>
@@ -220,6 +228,14 @@
 			</File>
 			<File
 				RelativePath=".\Locker.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Log.h"
+				>
+			</File>
+			<File
+				RelativePath=".\LogFile.h"
 				>
 			</File>
 			<File

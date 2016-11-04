@@ -24,16 +24,15 @@ Date::Date()
 
 Date::Date(int y, int m, int d)
 {
-	m_year = y;
-	m_month = m;
-	m_day = d;
-
+	if(!set(y,m,d)){
+		throw std::runtime_error("Date::Date(int y, int m, int dr) illegal format");
+	}
 }
 
 // "Y4/M2/D2" = "2016/10/11"
 Date::Date(const char* pStr)
 {
-	if(!setY4M4D2(pStr)){
+	if(!set(pStr)){
 		throw std::runtime_error("Date::Date(const char* pStr) illegal format");
 	}
 }
@@ -42,7 +41,17 @@ Date::~Date()
 {
 }
 
-bool Date::setY4M4D2(const char* pStr)
+// isValid() ‚ÍŽÀŽ{‚µ‚È‚¢
+bool Date::set(int y, int m, int d)
+{
+	m_year = y;
+	m_month = m;
+	m_day = d;
+	return true;
+}
+
+// isValid() ‚ÍŽÀŽ{‚µ‚È‚¢
+bool Date::set(const char* pStr)
 {
 	try{
 		std::string str = pStr;
