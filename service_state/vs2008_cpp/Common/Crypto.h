@@ -13,11 +13,12 @@ private:
 	HCRYPTHASH	m_hHash;
 	HCRYPTKEY	m_hKey;
 	std::string m_password;
-	DWORD m_max_length;
+	unsigned int m_max_length;
 	BYTE* m_pBuffer;
 public:
 	// コンストラクタ
-	Crypto(const std::string& password, DWORD max_length = 4096);
+	// Crypto(const std::string& password, DWORD max_length = 4096);
+	Crypto(const std::string& password, unsigned int max_length = 4096);
 	// デストラクタ
 	virtual ~Crypto();
 	// 暗号化
@@ -25,7 +26,7 @@ public:
 	// 複合化
 	bool dec(const std::string& in, std::string& dec);
 private:
-	int Initilize();
+	int initilize();
 };
 
 #endif	// _CRYPTO_H_

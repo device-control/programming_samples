@@ -11,7 +11,8 @@
 #define KEYLENGTH_128 (0x0080 * 0x10000) // 128-bit長
 
 ///////////////////////////////////////////////////////////////////////////////
-Crypto::Crypto(const std::string& password, DWORD max_length/*= 4096*/)
+// Crypto::Crypto(const std::string& password, DWORD max_length/*= 4096*/)
+Crypto::Crypto(const std::string& password, unsigned int max_length/*= 4096*/)
 	: m_password(password)
 	, m_max_length(max_length)
 	, m_pBuffer(NULL)
@@ -20,12 +21,12 @@ Crypto::Crypto(const std::string& password, DWORD max_length/*= 4096*/)
 	, m_hKey(NULL)
 {
 	m_pBuffer = new BYTE[m_max_length];
-	if( 0 != Initilize() ){
+	if( 0 != initilize() ){
 		// 異常
 	}
 }
 
-int Crypto::Initilize()
+int Crypto::initilize()
 {
 	/// http://www.trustss.co.jp/smnEncrypt010.html
 	/// CryptoAPIで暗号化・復号の処理をするには、CSP（CryptoGraphy Service Provider）という仕組みを利用
@@ -102,10 +103,10 @@ Crypto::~Crypto()
 ////////////////////////////////////////////////////////////////////////////////
 bool Crypto::enc(const std::string& in, std::string& enc)
 {
-	DWORD length = in.size();
+	unsigned int length = in.size();
 	if( length >= m_max_length ) return false;
 	memcpy(m_pBuffer, in.c_str(), length);
-	if( !CryptEncrypt(m_hKey, 0, TRUE, 0, m_pBuffer, &length, m_max_length) ){
+	if( !CryptEncrypt(m_hKey, 0, TRUE, 0, m_pBuffer, (DWORD *)&length, (DWORD)m_max_length) ){
 		//printf("ERROR: CryptEncrypt()\n");
 		return false;
 	}
@@ -116,11 +117,11 @@ bool Crypto::enc(const std::string& in, std::string& enc)
 ////////////////////////////////////////////////////////////////////////////////
 bool Crypto::dec(const std::string& in, std::string& dec)
 {
-	DWORD length = in.size();
+	unsigned int length = in.size();
 	if( length >= m_max_length ) return false;
 	memcpy(m_pBuffer, in.c_str(), length);
 
-	if(!CryptDecrypt(m_hKey, 0, TRUE, 0, m_pBuffer, &length)) {
+	if(!CryptDecrypt(m_hKey, 0, TRUE, 0, m_pBuffer, (DWORD *)&length)) {
 		//printf("ERROR: CryptDecrypt()\n");
 		return false;
 	}

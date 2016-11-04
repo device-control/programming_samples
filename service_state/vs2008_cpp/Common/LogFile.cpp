@@ -36,7 +36,7 @@ bool LogFile::open()
 bool LogFile::write(unsigned int level,  const char* format, ...)
 {
 	ThreadLocker lock(m_locker);
-	if( !(m_levle & level) ){
+	if( !(m_level & level) ){
 		return true; // o—Í‹–‰Â‚ª‚È‚¢
 	}
 	
