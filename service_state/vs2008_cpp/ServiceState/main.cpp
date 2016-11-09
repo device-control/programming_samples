@@ -9,6 +9,15 @@
 #include "Common/Date.h"
 #include "Common/LogManager.h"
 #include "Common/LogFile.h"
+#include "Common/SoundPlayer.h"
+
+unsigned char OK_WAV[] = {
+	#include "wav/ok.wav.txt"
+};
+
+unsigned char NG_WAV[] = {
+	#include "wav/ng.wav.txt"
+};
 
 class MockTimerLisener: public ITimerListener
 {
@@ -145,15 +154,20 @@ int main()
 		delete &lm;
 		LogManager::deleteDirectory("log"); // logƒtƒHƒ‹ƒ_ŠÛ‚²‚Æíœ
 	}
+	
+	// sound player test
+	SoundPlayer sound_player;
+	sound_player.play(NG_WAV, sizeof(NG_WAV));
 
 	MockTimerLisener timerLisener;
 	printf("timer start\n");
 	TimerManager& tm = TimerManager::getInstance();
 	tm.start();
 	tm.setTimer(timerLisener, "test", 1, 1000*3);
-	for(int i=0;i<5;i++){
-		Sleep(1000*1);
+	for(int i=0;i<50;i++){
+		Sleep(500*1);
 		printf("wait %d sec\n", i+1);
+		(i & 1) ? sound_player.play(OK_WAV, sizeof(OK_WAV)): sound_player.play(NG_WAV, sizeof(NG_WAV));
 	}
 	//tm.stop();
 	

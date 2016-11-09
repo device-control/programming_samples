@@ -189,6 +189,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Soundplayer.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\State.cpp"
 				>
 			</File>
@@ -256,6 +260,10 @@
 			</File>
 			<File
 				RelativePath=".\Singleton.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SoundPlayer.h"
 				>
 			</File>
 			<File
