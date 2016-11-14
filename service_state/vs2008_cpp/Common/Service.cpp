@@ -80,6 +80,13 @@ State& Service::getCurrentState() const
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+void Service::setInitialState(std::string stateName)
+{
+	if( m_currentState ) return; // İ’èÏ‚İ
+    m_currentState = findState(stateName);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 void Service::changeState(std::string stateName)
 {
     m_currentState = findState(stateName);

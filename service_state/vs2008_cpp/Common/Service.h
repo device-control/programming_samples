@@ -23,8 +23,6 @@ class API Service
 private:
 	// ステータスのマップ
 	std::map<std::string, State*> m_stateMap;
-	// 現在のステータス
-	State* m_currentState;
 	
 	// イベントループ用スレッド
 	HANDLE m_hLoopEventThread;
@@ -34,6 +32,8 @@ private:
 	// サービス開始済みフラグ
 	bool m_isOpen;
 protected:
+	// 現在のステータス
+	State* m_currentState;
 
 public:
 	// コンストラクタ
@@ -49,8 +49,10 @@ public:
 	void addEvent(Event& ev);
 	// 現在のステートを取得
 	State& getCurrentState() const;
+	// 初期ステート設定
+	void setInitialState(std::string stateName);
 	// ステート遷移
-	void changeState(std::string stateName);
+	virtual void changeState(std::string stateName);
 protected:
 	// ステート登録
 	void addState(State& state);

@@ -30,7 +30,7 @@ void TestService::initialize()
 	addState( *(new TestStateA()) );
 	addState( *(new TestStateB()) );
 	// ŠJnó‘Ôİ’è
-	changeState("TestStateA");
+	setInitialState("TestStateA");
 }
 
 int TestService::nextSequenceNo()
