@@ -32,7 +32,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <cstddef>
 #include <iostream>
 #include <iterator>
 #include <limits>
@@ -40,7 +39,6 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
-#include <utility>
 
 // for isnan/isinf
 #if __cplusplus>=201103L
@@ -56,15 +54,6 @@ extern "C" {
 # endif
 }
 #endif
-
-#ifndef PICOJSON_USE_RVALUE_REFERENCE
-# if (defined(__cpp_rvalue_references) && __cpp_rvalue_references >= 200610) || (defined(_MSC_VER) && _MSC_VER >= 1600)
-#  define PICOJSON_USE_RVALUE_REFERENCE 1
-# else
-#  define PICOJSON_USE_RVALUE_REFERENCE 0
-# endif
-#endif//PICOJSON_USE_RVALUE_REFERENCE
-
 
 // experimental support for int64_t (see README.mkdn for detail)
 #ifdef PICOJSON_USE_INT64
@@ -150,18 +139,10 @@ namespace picojson {
     ~value();
     value(const value& x);
     value& operator=(const value& x);
-#if PICOJSON_USE_RVALUE_REFERENCE 
-    value(value&& x)throw();
-    value& operator=(value&& x)throw();
-#endif
-    void swap(value& x)throw();
+    void swap(value& x);
     template <typename T> bool is() const;
     template <typename T> const T& get() const;
     template <typename T> T& get();
-    template <typename T> void set(const T &);
-#if PICOJSON_USE_RVALUE_REFERENCE
-    template <typename T> void set(T &&);
-#endif
     bool evaluate_as_boolean() const;
     const value& get(size_t idx) const;
     const value& get(const std::string& key) const;
@@ -178,7 +159,6 @@ namespace picojson {
     template <typename Iter> static void _indent(Iter os, int indent);
     template <typename Iter> void _serialize(Iter os, int indent) const;
     std::string _serialize(int indent) const;
-    void clear();
   };
   
   typedef value::array array;
@@ -246,8 +226,8 @@ namespace picojson {
   inline value::value(const char* s, size_t len) : type_(string_type) {
     u_.string_ = new std::string(s, len);
   }
-
-  inline void value::clear() {
+  
+  inline value::~value() {
     switch (type_) {
 #define DEINIT(p) case p##type: delete u_.p; break
       DEINIT(string_);
@@ -256,10 +236,6 @@ namespace picojson {
 #undef DEINIT
     default: break;
     }
-  }
-
-  inline value::~value() {
-    clear();
   }
   
   inline value::value(const value& x) : type_(x.type_) {
@@ -282,17 +258,8 @@ namespace picojson {
     }
     return *this;
   }
-
-#if PICOJSON_USE_RVALUE_REFERENCE 
-  inline value::value(value&& x)throw() : type_(null_type) {
-    swap(x);
-  }
-  inline value& value::operator=(value&& x)throw() {
-    swap(x);
-    return *this;
-  }
-#endif
-  inline void value::swap(value& x)throw() {
+  
+  inline void value::swap(value& x) {
     std::swap(type_, x.type_);
     std::swap(u_, x.u_);
   }
@@ -340,35 +307,6 @@ namespace picojson {
   GET(double, u_.number_)
 #endif
 #undef GET
-
-#define SET(ctype, jtype, setter)           \
-  template <> inline void value::set<ctype>(const ctype &_val) {  \
-    clear();                      \
-    type_ = jtype##_type;         \
-    setter                        \
-  }
-  SET(bool, boolean, u_.boolean_ = _val;)
-  SET(std::string, string, u_.string_ = new std::string(_val);)
-  SET(array, array, u_.array_ = new array(_val);)
-  SET(object, object, u_.object_ = new object(_val);)
-  SET(double, number, u_.number_ = _val;)
-#ifdef PICOJSON_USE_INT64
-  SET(int64_t, int64, u_.int64_ = _val;)
-#endif
-#undef SET
-
-#if PICOJSON_USE_RVALUE_REFERENCE
-#define MOVESET(ctype, jtype, setter)       \
-  template <> inline void value::set<ctype>(ctype &&_val) {     \
-    clear();                      \
-    type_ = jtype##_type;         \
-    setter                        \
-  }
-  MOVESET(std::string, string, u_.string_ = new std::string(std::move(_val));)
-  MOVESET(array, array, u_.array_ = new array(std::move(_val));)
-  MOVESET(object, object, u_.object_ = new object(std::move(_val));)
-#undef MOVESET
-#endif
   
   inline bool value::evaluate_as_boolean() const {
     switch (type_) {
@@ -378,10 +316,6 @@ namespace picojson {
       return u_.boolean_;
     case number_type:
       return u_.number_ != 0;
-#ifdef PICOJSON_USE_INT64
-    case int64_type:
-      return u_.int64_ != 0;
-#endif
     case string_type:
       return ! u_.string_->empty();
     default:
@@ -469,11 +403,10 @@ namespace picojson {
     std::copy(s.begin(), s.end(), oi);
   }
   
-  template <typename Iter>
-  struct serialize_str_char {
-    Iter oi;
-    void operator()(char c) {
-      switch (c) {
+  template <typename Iter> void serialize_str(const std::string& s, Iter oi) {
+    *oi++ = '"';
+    for (std::string::const_iterator i = s.begin(); i != s.end(); ++i) {
+      switch (*i) {
 #define MAP(val, sym) case val: copy(sym, oi); break
 	MAP('"', "\\\"");
 	MAP('\\', "\\\\");
@@ -485,22 +418,16 @@ namespace picojson {
 	MAP('\t', "\\t");
 #undef MAP
       default:
-	if (static_cast<unsigned char>(c) < 0x20 || c == 0x7f) {
+	if (static_cast<unsigned char>(*i) < 0x20 || *i == 0x7f) {
 	  char buf[7];
-	  SNPRINTF(buf, sizeof(buf), "\\u%04x", c & 0xff);
+	  SNPRINTF(buf, sizeof(buf), "\\u%04x", *i & 0xff);
 	  copy(buf, buf + 6, oi);
 	  } else {
-	  *oi++ = c;
+	  *oi++ = *i;
 	}
 	break;
       }
     }
-  };
-  
-  template <typename Iter> void serialize_str(const std::string& s, Iter oi) {
-    *oi++ = '"';
-    serialize_str_char<Iter> process_char = { oi };
-    std::for_each(s.begin(), s.end(), process_char);
     *oi++ = '"';
   }
 
@@ -597,35 +524,34 @@ namespace picojson {
   template <typename Iter> class input {
   protected:
     Iter cur_, end_;
-    bool consumed_;
+    int last_ch_;
+    bool ungot_;
     int line_;
   public:
-    input(const Iter& first, const Iter& last) : cur_(first), end_(last), consumed_(false), line_(1) {}
+    input(const Iter& first, const Iter& last) : cur_(first), end_(last), last_ch_(-1), ungot_(false), line_(1) {}
     int getc() {
-      if (consumed_) {
-        if (*cur_ == '\n') {
-          ++line_;
-        }
-        ++cur_;
+      if (ungot_) {
+	ungot_ = false;
+	return last_ch_;
       }
       if (cur_ == end_) {
-        consumed_ = false;
-        return -1;
+	last_ch_ = -1;
+	return -1;
       }
-      consumed_ = true;
-      return *cur_ & 0xff;
+      if (last_ch_ == '\n') {
+	line_++;
+      }
+      last_ch_ = *cur_ & 0xff;
+      ++cur_;
+      return last_ch_;
     }
     void ungetc() {
-      consumed_ = false;
-    }
-    Iter cur() const {
-      if (consumed_) {
-        input<Iter> *self = const_cast<input<Iter>*>(this);
-        self->consumed_ = false;
-        ++self->cur_;
+      if (last_ch_ != -1) {
+	PICOJSON_ASSERT(! ungot_);
+	ungot_ = true;
       }
-      return cur_;
     }
+    Iter cur() const { return cur_; }
     int line() const { return line_; }
     void skip_ws() {
       while (1) {
@@ -1054,14 +980,12 @@ namespace picojson {
   }
 }
 
-#if !PICOJSON_USE_RVALUE_REFERENCE 
 namespace std {
   template<> inline void swap(picojson::value& x, picojson::value& y)
     {
       x.swap(y);
     }
 }
-#endif
 
 inline std::istream& operator>>(std::istream& is, picojson::value& x)
 {
