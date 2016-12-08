@@ -67,5 +67,94 @@ namespace ServiceState
         {
             Console.WriteLine("StateChanged {0} {1}", service.Name, stateName);
         }
+
+        // コントロールを名前で取得
+        public static Control _FindControl(Control baseControl, string name)
+        {
+            // baseControl の全コントロール検索
+            foreach (Control control in baseControl.Controls)
+            {
+                // コントロール内にコントロールが含まれている場合は再帰
+                if (control.HasChildren)
+                {
+                    Control cFindControl = _FindControl(control, name);
+
+                    // コントロールが見つかった場合はそのまま返す
+                    if (cFindControl != null)
+                    {
+                        return cFindControl;
+                    }
+                }
+
+                // コントロール名がチェック
+                if (control.Name == name)
+                {
+                    return control;
+                }
+            }
+            return null;
+        }
+
+        // コントロールを名前で取得
+        public Control GetControl(string name)
+        {
+            Control ctl = _FindControl(this, name);
+            return ctl;
+        }
+
+        // 値を取得(text)
+        public string GetControlValueString(string name, string defaultValue)
+        {
+            var ctrl = GetControl(name);
+            if (null == ctrl)
+            {
+                return defaultValue;
+            }
+            return (string)ctrl.Text;
+        }
+        // 値を取得(uint)
+        public uint GetControlValueUINT(string name, uint defaultValue)
+        {
+            var str = GetControlValueString(name, "");
+            if (str == "")
+            {
+                return defaultValue;
+            }
+            uint num = defaultValue;
+            if (UInt32.TryParse(str, out num))
+            {
+                return num; // 10進数
+            }
+            return Convert.ToUInt32(str, 16); // 16進数
+        }
+
+        // 値を設定(text)
+        public bool SetControlValueString(string name, string value)
+        {
+            var ctrl = GetControl(name);
+            if (null == ctrl)
+            {
+                return false;
+            }
+            ctrl.Text = value;
+            return true;
+        }
+        // 値を設定(uint)
+        delegate void SetControlValueUINTCallBack(string name, uint value);
+        public void SetControlValueUINT(string name, uint value)
+        {
+            //if (m_isCloseing) return; // FormClosing 中は表示させない
+
+            if (this.InvokeRequired)
+            {
+                SetControlValueUINTCallBack d = new SetControlValueUINTCallBack(SetControlValueUINT);
+                this.Invoke(d, new object[] { name, value });
+            }
+            else
+            {
+                string str = String.Format("0x{0:X8}", value);
+                SetControlValueString(name, str);
+            }
+        }
     }
 }
