@@ -33,6 +33,11 @@ namespace ServiceState.Common
             m_serialPort.StopBits = System.IO.Ports.StopBits.One;
             m_serialPort.Handshake = System.IO.Ports.Handshake.None;
 
+            if (ipconfig.ContainsKey("PORT_NAME"))
+            {
+                m_serialPort.PortName = ipconfig["PORT_NAME"];
+            }
+
             // https://msdn.microsoft.com/ja-jp/library/system.io.ports.parity(v=vs.110).aspx
             // 文字列から定義値に変換してるっぽい。
             // (System.IO.Ports.Parity)Enum.Parse(typeof(System.IO.Ports.Parity), parity, true);
@@ -81,6 +86,7 @@ namespace ServiceState.Common
                 }
                 catch (System.IO.IOException/* ex*/)
                 {
+                    // TODO: close されると来ると思う。。。
                     continue;
                 }
                 // catch (System.IO.Ports.TimeoutException/* ex*/)
