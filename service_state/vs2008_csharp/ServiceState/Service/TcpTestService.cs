@@ -37,7 +37,7 @@ namespace ServiceState.Service
             buffersIndex["test_tcp_server"] = 0;
             buffersIndex["test_tcp_client"] = 0;
 
-            AddState(new State.SerialTestStateA());
+            AddState(new State.TCPTestStateA());
             StartStateName = "TCPTestStateA";
 
             IPConfig server_ipconfig = new IPConfig();

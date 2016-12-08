@@ -10,12 +10,12 @@ namespace ServiceState.Service
     class SerialTestService : Common.Service, Common.IStreamObserver
     {
         private Common.SerialStream[] m_serialStream = {null, null};
-        public SerialTestService() : base("TestService")
+        public SerialTestService() : base("SerialTestService")
         {
             AddState(new State.SerialTestStateA());
-            StartStateName = "TestStateA";
+            StartStateName = "SerialTestStateA";
 
-            for (int i = 1; i < 2; i++)
+            for (int i = 0; i < 2; i++)
             {
                 IPConfig ipconfig = new IPConfig();
                 ipconfig["STREAM_NAME"] = "test_serial_stream0";

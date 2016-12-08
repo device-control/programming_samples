@@ -79,9 +79,11 @@ namespace ServiceState.Common
             {
                 try
                 {
-                    byte[] rcvBytes = new byte[m_serialPort.ReadBufferSize];
-                    int size = m_serialPort.Read(rcvBytes, 0, rcvBytes.Length);
-                    NotifyMessageReceived(this, rcvBytes);
+                    byte[] receiveBytes = new byte[m_serialPort.ReadBufferSize];
+                    int receiveSize = m_serialPort.Read(receiveBytes, 0, receiveBytes.Length);
+                    byte[] buff = new byte[receiveSize];
+                    Buffer.BlockCopy(receiveBytes, 0, buff, 0, receiveSize);
+                    NotifyMessageReceived(this, buff);
                     // Console.WriteLine("受信したデータ:{0}", rcvBytes);
                 }
                 catch (System.IO.IOException/* ex*/)
