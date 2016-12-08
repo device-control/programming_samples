@@ -13,6 +13,7 @@ namespace ServiceState
     {
         private Service.UDPTestService testService = null; // new service.TestService();
         private Service.TCPTestService tcpTestService = null;
+        private Service.SerialTestService serialTestService = null;
 
         public Form1()
         {
@@ -47,6 +48,12 @@ namespace ServiceState
             Common.ServiceManager.GetInstance().AddService(tcpTestService);
             tcpTestService.Start();
             tcpTestService.AddEvent(new Common.Event("EventA")); // イベント "EventA" 発行
+
+            // Serial テスト
+            serialTestService = new Service.SerialTestService();
+            Common.ServiceManager.GetInstance().AddService(serialTestService);
+            serialTestService.Start();
+            serialTestService.AddEvent(new Common.Event("EventA"));
 
         }
 

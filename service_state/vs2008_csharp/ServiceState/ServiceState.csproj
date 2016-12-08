@@ -103,8 +103,10 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <Compile Include="Service\SerialTestService.cs" />
     <Compile Include="Service\TCPTestService.cs" />
     <Compile Include="Service\UDPTestService.cs" />
+    <Compile Include="State\SerialTestStateA.cs" />
     <Compile Include="State\TCPTestStateA.cs" />
     <Compile Include="State\TestState.cs" />
     <Compile Include="State\UDPTestStateA.cs" />
