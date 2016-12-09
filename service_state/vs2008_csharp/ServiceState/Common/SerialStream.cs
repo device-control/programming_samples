@@ -42,6 +42,7 @@ namespace ServiceState.Common
             // 文字列から定義値に変換してるっぽい。
             // (System.IO.Ports.Parity)Enum.Parse(typeof(System.IO.Ports.Parity), parity, true);
 
+            // closeするとIOExceptionが発行されるのでタイムアウトは一旦設定しない。
             // m_serialPort.ReadTimeout = 500;
             // m_serialPort.WriteTimeout = 500;
         }

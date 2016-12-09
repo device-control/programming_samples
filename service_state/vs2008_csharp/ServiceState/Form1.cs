@@ -68,6 +68,10 @@ namespace ServiceState
             tcpTestService.Stop();
             tcpTestService.Dispose();
             tcpTestService = null;
+
+            serialTestService.Stop();
+            serialTestService.Dispose();
+            serialTestService = null;
         }
 
         void Common.IServiceObserver.StateChanged(Common.Service service, string stateName)
