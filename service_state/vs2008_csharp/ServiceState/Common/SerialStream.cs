@@ -33,13 +33,65 @@ namespace ServiceState.Common
             m_serialPort.StopBits = System.IO.Ports.StopBits.One;
             m_serialPort.Handshake = System.IO.Ports.Handshake.None;
 
+            // ポート名
             if (ipconfig.ContainsKey("PORT_NAME"))
             {
                 m_serialPort.PortName = ipconfig["PORT_NAME"];
             }
+            // ボーレート
+            if (ipconfig.ContainsKey("BAUD_RATE")) 
+            {
+                m_serialPort.BaudRate = int.Parse(ipconfig["BAUD_RATE"]);
+            }
+            // パリティ
+            if (ipconfig.ContainsKey("PARITY"))
+            {
+                // Even : ビット セットの数は偶数ようには、パリティ ビットを設定します。
+                // Mark : パリティ ビットを 1 に設定のままです。
+                // None : パリティ チェックは行われません。
+                // Odd : ビット セットの数が奇数パリティ ビットを設定します。
+                // Space : パリティ ビットを 0 に設定のままです。
+                m_serialPort.Parity = (System.IO.Ports.Parity)Enum.Parse(
+                    typeof(System.IO.Ports.Parity), ipconfig["PARITY"], true);
+            }
+            // データビット
+            if (ipconfig.ContainsKey("DATA_BITS"))
+            {
+                m_serialPort.DataBits = int.Parse(ipconfig["DATA_BITS"]);
+            }
+            // ストップビット
+            if (ipconfig.ContainsKey("STOP_BITS"))
+            {
+                // None : ストップ ビットは使用されません。 この値でサポートされていない、 StopBits プロパティです。
+                // One : 1 つのストップ ビットが使用されます。
+                // OnePointFive : 1.5 ストップ ビットが使用されます。
+                // Two : 2 つのストップ ビットを使用します。
+                m_serialPort.StopBits = (System.IO.Ports.StopBits)Enum.Parse(
+                    typeof(System.IO.Ports.StopBits), ipconfig["STOP_BITS"], true);
+            }
+            // ハンドシェーク
+            if (ipconfig.ContainsKey("HANDSHAKE"))
+            {
+                // None : ハンドシェイクの場合は、コントロールは使用されません。
+                // RequestToSend : 送信要求 (RTS) ハードウェアのフロー制御が使用されます。 
+                //                 RTS は、データが伝送できることを通知します。 
+                //                 RTS 行に設定する場合は、入力バッファーがいっぱいになると、 falseです。 
+                //                 RTS 行に設定されます true 広げますが入力バッファで使用できるになります。
+                // RequestToSendXOnXOff : 要求の送信 (RTS) ハードウェアの制御と XON/XOFF ソフトウェア コントロールの
+                //                        両方が使用されます。
+                // XOnXOff : XON/XOFF ソフトウェア制御プロトコルが使用されます。 
+                //                    XOFF コントロールは、データの送信を停止に送信されます。 
+                //                    XON コントロールは、転送を再開する送信されます。 
+                //                    これらのソフトウェアのコントロールでは、要求を送信 (RTS) の代わりに使用し、
+                //                    ハードウェアのコントロールに送信する (CTS) をクリアします。
+                m_serialPort.Handshake = (System.IO.Ports.Handshake)Enum.Parse(
+                    typeof(System.IO.Ports.Handshake), ipconfig["HANDSHAKE"], true);
+            }
 
+            
             // https://msdn.microsoft.com/ja-jp/library/system.io.ports.parity(v=vs.110).aspx
             // 文字列から定義値に変換してるっぽい。
+            // 引数の意味は、第1=enum定義, 第2=enum定義値の文字列, 第3=大文字小文字の区別をしない(true)
             // (System.IO.Ports.Parity)Enum.Parse(typeof(System.IO.Ports.Parity), parity, true);
 
             // closeするとIOExceptionが発行されるのでタイムアウトは一旦設定しない。
