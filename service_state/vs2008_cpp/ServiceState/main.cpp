@@ -10,6 +10,7 @@
 #include "Common/LogManager.h"
 #include "Common/LogFile.h"
 #include "Common/SoundPlayer.h"
+#include "Common/thread.h"
 
 unsigned char OK_WAV[] = {
 	#include "wav/ok.wav.txt"
@@ -26,6 +27,55 @@ class MockTimerLisener: public ITimerListener
 		printf("%s %d\n", name.c_str(), sequenceNo);
 	}
 };
+
+unsigned __stdcall threadFunc(void *params)
+{
+	printf("thread start\n");
+	int32 i = 0;
+	while(1){
+		Sleep(1*1000);
+		i++;
+		printf("thread: %d sec\n",(int)i);
+	}
+}
+
+void ThreadTest()
+{
+	printf("--- thread test ---\n");
+	Thread& thread = *new Thread("thread_test", threadFunc);
+	thread.start(NULL);
+	Sleep(3*1000);
+	printf("thread cancel\n");
+	thread.raise();
+	thread.join();
+	delete &thread;
+	printf("thread test end\n");
+}
+
+unsigned __stdcall threadFunc2(void *params)
+{
+	Thread& thread = *((Thread*)params);
+	printf("thread test2 start\n");
+	int32 i = 0;
+	while(1){
+		Sleep(1*1000);
+		i++;
+		printf("thread test2: %d sec\n",(int)i);
+		if( i==3 ){
+			thread.raise();
+		}
+	}
+}
+
+void ThreadTest2()
+{
+	printf("--- thread test2 ---\n");
+	Thread& thread = *new Thread("thread_test2", threadFunc2);
+	thread.start((void*)&thread);
+	thread.join();
+	delete &thread;
+	printf("thread test2 end\n");
+}
 
 int main()
 {
