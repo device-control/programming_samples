@@ -24,7 +24,7 @@ public:
 	TCPServer();
 	~TCPServer();
 	// tcp listener でOS別に必要な情報を纏める
-	void open(std::string& ip, int32 port); // リッスン開始
+	void open(std::string ip, int32 port); // リッスン開始
 	TCPSocket& accept(); // 接続待ち
 	void close(); // リッスン破棄
 
@@ -47,7 +47,7 @@ public:
 	// TCPSocket(SOCKET); としたいけど SOCKET i/f が公開されるのはよくない。依存増加
 	friend TCPServer;
 	// tcp 接続情報
-	void open(std::string& ip, int32 port);
+	void open(std::string ip, int32 port);
 	int32 send(std::vector<int8>& buffer);
 	int32 receive(std::vector<int8>& buffer, int32 timeout);
 	void close();

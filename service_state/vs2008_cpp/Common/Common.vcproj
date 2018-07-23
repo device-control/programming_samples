@@ -60,6 +60,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
+				AdditionalLibraryDirectories=""
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -197,6 +198,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\tcp.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\thread.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ThreadLocker.cpp"
 				>
 			</File>
@@ -214,6 +223,10 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath=".\basetype.h"
+				>
+			</File>
 			<File
 				RelativePath=".\Crypto.h"
 				>
@@ -275,6 +288,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\tcp.h"
+				>
+			</File>
+			<File
+				RelativePath=".\thread.h"
+				>
+			</File>
+			<File
 				RelativePath=".\ThreadLocker.h"
 				>
 			</File>
@@ -284,6 +305,10 @@
 			</File>
 			<File
 				RelativePath=".\TimerManager.h"
+				>
+			</File>
+			<File
+				RelativePath=".\uncopyable.h"
 				>
 			</File>
 		</Filter>

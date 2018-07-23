@@ -1,3 +1,4 @@
+#include "Common/tcp.h"
 #include <windows.h>
 #include <stdio.h>
 #include <process.h>
@@ -28,57 +29,9 @@ class MockTimerLisener: public ITimerListener
 	}
 };
 
-unsigned __stdcall threadFunc(void *params)
+void Test_Crypto()
 {
-	printf("thread start\n");
-	int32 i = 0;
-	while(1){
-		Sleep(1*1000);
-		i++;
-		printf("thread: %d sec\n",(int)i);
-	}
-}
-
-void ThreadTest()
-{
-	printf("--- thread test ---\n");
-	Thread& thread = *new Thread("thread_test", threadFunc);
-	thread.start(NULL);
-	Sleep(3*1000);
-	printf("thread cancel\n");
-	thread.raise();
-	thread.join();
-	delete &thread;
-	printf("thread test end\n");
-}
-
-unsigned __stdcall threadFunc2(void *params)
-{
-	Thread& thread = *((Thread*)params);
-	printf("thread test2 start\n");
-	int32 i = 0;
-	while(1){
-		Sleep(1*1000);
-		i++;
-		printf("thread test2: %d sec\n",(int)i);
-		if( i==3 ){
-			thread.raise();
-		}
-	}
-}
-
-void ThreadTest2()
-{
-	printf("--- thread test2 ---\n");
-	Thread& thread = *new Thread("thread_test2", threadFunc2);
-	thread.start((void*)&thread);
-	thread.join();
-	delete &thread;
-	printf("thread test2 end\n");
-}
-
-int main()
-{
+	printf("--- %s ---\n", __FUNCTION__);
 	// 暗号化／複合化
 	Crypto& cp = *new Crypto("test");
 	std::string tbl[] = {
@@ -98,7 +51,12 @@ int main()
 		}
 	}
 	delete &cp;
+}
 
+
+void Test_Date()
+{
+	printf("--- %s ---\n", __FUNCTION__);
 	// Dateクラス実験
 	//std::string& st = std::string("test");
 	Date now = Date::getToday();
@@ -173,42 +131,46 @@ int main()
 			}
 		}
 	}
+}
 
-	{
-		// LogManagerクラス実験
-		LogManager::createDirectory("log"); // dummy directorys
-		LogManager::createDirectory("log\\test00");
-		LogManager::createDirectory("log\\test01\\test222");
-		system("echo 0 >> log\\20171101.log"); // 1年未来
-		system("echo 1 >> log\\20161031.log");
-		system("echo 2 >> log\\20161030.log");
-		system("echo 3 >> log\\20161029.log");
-		system("echo 4 >> log\\20161028.log");
-		system("echo 4 >> log\\20161027.log");
-		system("echo 4 >> log\\20151101.log"); // １年前
-		LogManager& lm = *new LogManager("2016/11/1", "log"); // ログ作成日, ログ出力先
-		std::string fileName = lm.getFileName();
-		std::vector<std::string> list = lm.getFileList();
-		lm.dayRetentionOf(3); // 指定引数「3」とは当日の除いて３日間のログを保持。それより過去は削除
-		std::vector<std::string> list2 = lm.getFileList();
-		// TODO: logファイルにテスト書き出し
-		Crypto& cp = *new Crypto("test");
-		LogFile& log = *new LogFile(fileName.c_str());
-		log.setCrypto(cp); // cp 管理は log が行う（delete は Log)
-		log.open();
-		log.write(Log::LEVEL_SYSTEM, "%d:%s\n", 0x1000, "test");
-		log.close();
-		delete &log;
+void Test_LogManager()
+{
+	printf("--- %s ---\n", __FUNCTION__);
+	// LogManagerクラス実験
+	LogManager::createDirectory("log"); // dummy directorys
+	LogManager::createDirectory("log\\test00");
+	LogManager::createDirectory("log\\test01\\test222");
+	system("echo 0 >> log\\20171101.log"); // 1年未来
+	system("echo 1 >> log\\20161031.log");
+	system("echo 2 >> log\\20161030.log");
+	system("echo 3 >> log\\20161029.log");
+	system("echo 4 >> log\\20161028.log");
+	system("echo 4 >> log\\20161027.log");
+	system("echo 4 >> log\\20151101.log"); // １年前
+	LogManager& lm = *new LogManager("2016/11/1", "log"); // ログ作成日, ログ出力先
+	std::string fileName = lm.getFileName();
+	std::vector<std::string> list = lm.getFileList();
+	lm.dayRetentionOf(3); // 指定引数「3」とは当日の除いて３日間のログを保持。それより過去は削除
+	std::vector<std::string> list2 = lm.getFileList();
+	// TODO: logファイルにテスト書き出し
+	Crypto& cp = *new Crypto("test");
+	LogFile& log = *new LogFile(fileName.c_str());
+	log.setCrypto(cp); // cp 管理は log が行う（delete は Log)
+	log.open();
+	log.write(Log::LEVEL_SYSTEM, "%d:%s\n", 0x1000, "test");
+	log.close();
+	delete &log;
+	delete &lm;
+	LogManager::deleteDirectory("log"); // logフォルダ丸ごと削除
+}
 
-		
-		delete &lm;
-		LogManager::deleteDirectory("log"); // logフォルダ丸ごと削除
-	}
-	
+void Test_SoundPlayer()
+{
+	printf("--- %s ---\n", __FUNCTION__);
 	// sound player test
 	SoundPlayer sound_player;
 	sound_player.play(NG_WAV, sizeof(NG_WAV));
-
+	
 	MockTimerLisener timerLisener;
 	printf("timer start\n");
 	TimerManager& tm = TimerManager::getInstance();
@@ -220,7 +182,11 @@ int main()
 		(i & 1) ? sound_player.play(OK_WAV, sizeof(OK_WAV)): sound_player.play(NG_WAV, sizeof(NG_WAV));
 	}
 	//tm.stop();
-	
+}
+
+void Test_Service()
+{
+	printf("--- %s ---\n", __FUNCTION__);
 	ServiceManager& sm = *new ServiceManager(); // ServiceManagerを生成
 	sm.addService("TestService", *new TestService()); // ServiceManagerにTestServiceを登録
 	TestService& ts = *((TestService *)sm.findService("TestService")); // ServiceManagerに登録したTestServiceを取得
@@ -228,4 +194,161 @@ int main()
 	sm.addEvent("TestService", ev); // ServiceManager経由でイベントを登録
 	ts.waitEnd();
 	delete &sm; // ServiceManagerを削除(serviceが保持しているstate破棄、ServiceManagerが保持しているservice破棄）
+}
+
+
+unsigned __stdcall tcp_server_func(void *params)
+{
+	TCPServer& tcpServer = *new TCPServer();
+	tcpServer.open("localhost", 8081);
+	// tcpServer.open(std::string("localhost"), 8081);
+	TCPSocket& socket = tcpServer.accept();
+//	if( NULL == pSocket ){
+//		// 異常
+//		printf("0: SERVER_LOG: ERROR\n");
+//	}
+//	TCPSocket& socket = *pSocket; // 面倒なんで参照型にする
+	// send
+	std::string send_msg = "server to hello";
+	printf("1: SERVER_LOG: SEND: %s\n", send_msg.c_str());
+	std::vector<int8> send_buffer(send_msg.begin(), send_msg.end());
+	int32 send_len = socket.send(send_buffer);
+	// receive
+	std::vector<int8> recv_buffer(20, 0);
+	int32 recv_len = socket.receive(recv_buffer, 0);
+	std::string recv_msg((const char*)&recv_buffer[0], recv_len);
+	printf("4: SERVER_LOG: RECV: %s\n", recv_msg.c_str());
+	socket.close();
+	tcpServer.close();
+	delete &tcpServer;
+	Sleep(2 * 1000); // thread 終了を待たせる
+	printf("5: SERVER_LOG: END\n");
+	return 0;
+}
+
+void Test_tcp()
+{
+	printf("--- %s ---\n", __FUNCTION__);
+	// tcp
+	tcp_initialize();
+	{
+		/*
+		// 実験
+		struct sockaddr_in addr;
+		memset(&addr, 0, sizeof(addr));
+		SOCKET m_sock = ::socket(AF_INET, SOCK_STREAM, 0);
+		if( INVALID_SOCKET == m_sock ) {
+		}
+		addr.sin_family = AF_INET;
+		addr.sin_port = htons((uint16)8081);
+		addr.sin_addr.S_un.S_addr = INADDR_ANY;
+		if( 0 != ::bind(m_sock, (struct sockaddr *)&addr, sizeof(addr)) ){
+		}
+		if( 0 != ::listen(m_sock, 1) ){
+		}
+		
+		TCPSocket& socket = *new TCPSocket();
+		socket.open(std::string("127.0.0.1"), 8081);
+		*/
+	}
+	Thread& tcp_server_thread = *new Thread("tcp_server", tcp_server_func);
+	tcp_server_thread.start((void*)NULL);
+	// HANDLE hThread = reinterpret_cast<HANDLE>(
+	// 										  _beginthreadex(
+	// 														 NULL,
+	// 														 0,
+	// 														 tcp_server_func,
+	// 														 0,
+	// 														 0,
+	// 														 0)
+	//										  );
+	Sleep(1*1000); // thread 生成までまつ。適当
+	// client connection
+	TCPSocket& socket = *new TCPSocket();
+	socket.open("127.0.0.1", 8081);
+	// receive
+	std::vector<int8> recv_buffer(20, 0);
+	int32 recv_len = socket.receive(recv_buffer, 0);
+	std::string recv_msg((const char*)&recv_buffer[0], recv_len);
+	printf("2: CLIENT_LOG: RECV: %s\n", recv_msg.c_str());
+	// send
+	std::string send_msg = "client to hello";
+	printf("3: CLIENT_LOG: SEND: %s\n", send_msg.c_str());
+	std::vector<int8> send_buffer(send_msg.begin(), send_msg.end());
+	int32 send_len = socket.send(send_buffer);
+	socket.close();
+	
+	//tcpServerThread.join();
+	// WaitForSingleObject(hThread, INFINITE);
+	// hThread = NULL;
+	tcp_server_thread.join();
+	printf("6: CLIENT_LOG: END\n");
+	delete &tcp_server_thread;
+
+	tcp_finalize();
+	printf("7: END\n");
+	Sleep(5 * 1000);
+}
+
+unsigned __stdcall thread1_func(void *params)
+{
+	printf("thread start\n");
+	int32 i = 0;
+	while(1){
+		Sleep(1*1000);
+		i++;
+		printf("thread: %d sec\n",(int)i);
+	}
+}
+
+void Test_thread1()
+{
+	printf("--- %s ---\n", __FUNCTION__);
+	Thread& thread = *new Thread("thread_test", thread1_func);
+	thread.start(NULL);
+	Sleep(3*1000);
+	printf("thread cancel\n");
+	thread.raise();
+	thread.join();
+	delete &thread;
+	printf("thread test end\n");
+}
+
+unsigned __stdcall thread2_func(void *params)
+{
+	Thread& thread = *((Thread*)params);
+	// printf("thread test2 start\n");
+	int32 i = 0;
+	while(1){
+		Sleep(1*1000);
+		i++;
+		// printf("thread test2: %d sec\n",(int)i);
+		if( i==3 ){
+			thread.raise();
+		}
+	}
+}
+
+void Test_thread2()
+{
+	printf("--- %s ---\n", __FUNCTION__);
+	Thread& thread = *new Thread("thread_test2", thread2_func);
+	thread.start((void*)&thread);
+	thread.join();
+	delete &thread;
+	// printf("thread test2 end\n");
+}
+
+int main()
+{
+	Test_Crypto();
+	Test_Date();
+	Test_LogManager();
+	Test_SoundPlayer();
+	Test_thread1();
+	Test_thread2();
+	Test_tcp();
+	Test_Service();
+	printf("plase push enter.\n");
+	while(getchar() != '\n');
 }

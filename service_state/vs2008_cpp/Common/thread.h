@@ -7,7 +7,7 @@
 #include <windows.h>
 #include <process.h>
 
-typedef _beginthreadex_proc_type ThreadFunction;
+typedef unsigned (__stdcall *ThreadFunction)(void *p);
 typedef void* ThreadArgs;
 typedef HANDLE ThreadHandle;
 

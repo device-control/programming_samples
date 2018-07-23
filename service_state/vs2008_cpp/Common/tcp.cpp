@@ -53,7 +53,7 @@ TCPServer::~TCPServer()
 /*
   TCPServer open
 */
-void TCPServer::open(std::string& ip, int32 port)
+void TCPServer::open(std::string ip, int32 port)
 {
 	if(m_opened){
 		return;
@@ -131,7 +131,7 @@ TCPSocket::~TCPSocket()
 /*
   TCPSocket open
 */
-void TCPSocket::open(std::string& ip, int32 port)
+void TCPSocket::open(std::string ip, int32 port)
 {
 	if(m_opened){
 		return;
