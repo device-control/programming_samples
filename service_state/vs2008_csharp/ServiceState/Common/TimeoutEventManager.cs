@@ -2,48 +2,48 @@
 using System.Collections.Generic;
 using System.Threading;
 
-// Event に依存しない ITimerObserver で実現したタイマ
+// Event に依存したタイマ
 namespace ServiceState.Common
 {
-    public struct TimerInformation
+    public struct TimeoutEventInfo
     {
-        public string name; // タイマ名
-        public int initial_timeout; // タイムアウト初期値値
-        public int timeout; // タイムアウト値
-        public int sequenceNo; // シーケンス番号(ユーザ指定)
-        public int count; // 繰り返しカウント 
-        public ITimerObserver observer;
+        public string name;
+        public int initial_timeout;
+        public int timeout;
+        public int loopCount;
+        public Service sv;
+        public Event ev;
 
-        public TimerInformation(string name, int timeout, int sequenceNo, ITimerObserver observer)
+        public TimeoutEventInfo(string name, int timeout, int loopCount, Service sv, Event ev)
         {
             this.name = name;
             this.initial_timeout = this.timeout = timeout;
-            this.sequenceNo = sequenceNo;
-            this.observer = observer;
-            this.count = 0;
+            this.loopCount = loopCount;
+            this.sv = sv;
+            this.ev = ev;
         }
     }
     
-    public class TimerManager
+    public class TimeoutEventManager
     {
-        private const int DEFUALT_TIMER_INTERVAL = 200; // 200ms
-        private int TIMER_INTERVAL = DEFUALT_TIMER_INTERVAL;
-        private static readonly TimerManager instance = new TimerManager();
+        public static readonly int TIMER_CONTINUOUS = -1;
+        private int TIMER_INTERVAL = 200; // 200ms
+        private static readonly TimeoutEventManager instance = new TimeoutEventManager();
         private object m_mutex = new object();
         private System.Timers.Timer m_timer = null;
-        Dictionary<string, TimerInformation> m_timerInfos = null;
-        private TimerManager()
+        Dictionary<string, TimeoutEventInfo> m_timerInfos = null;
+        private TimeoutEventManager()
         {
         }
         
         // 注意：起動時1回だけ呼び出す
-        public bool Start(int interval_time = DEFUALT_TIMER_INTERVAL)
+        public bool Start(int interval_time = 200)
         {
             if( null != this.m_timer)
             {
                 return false; // start中
             }
-            this.m_timerInfos = new Dictionary<string, TimerInformation>();
+            this.m_timerInfos = new Dictionary<string, TimeoutEventInfo>();
             this.TIMER_INTERVAL = interval_time;
             this.m_timer = new System.Timers.Timer();
             this.m_timer.Enabled = true;
@@ -83,30 +83,31 @@ namespace ServiceState.Common
                 List<string> names = new List<string>(this.m_timerInfos.Keys);
                 foreach (string name in names)
                 {
-                    TimerInformation tmi = this.m_timerInfos[name];
+                    TimeoutEventInfo tmi = this.m_timerInfos[name];
                     tmi.timeout -= this.TIMER_INTERVAL;
                     this.m_timerInfos[name] = tmi;
                     if (tmi.timeout <= 0)
                     {
                         tmi.timeout = tmi.initial_timeout;
-                        if (false == tmi.observer.Timeout(tmi)) // コールバック
+                        tmi.sv.AddEvent(tmi.ev);
+                        if (tmi.loopCount == TIMER_CONTINUOUS) // 無限リピート
                         {
-                            // 継続
-                            tmi.count += 1;
                             this.m_timerInfos[name] = tmi;
+                            continue;
                         }
-                        else
+                        tmi.loopCount -= 1;
+                        if (tmi.loopCount == 0)
                         {
-                            // 終了
                             this.m_timerInfos.Remove(name);
                             continue;
                         }
+                        this.m_timerInfos[name] = tmi;
                     }
                 }
             }
         }
 
-        public bool Add(string name, int timeout, int sequenceNo, ITimerObserver observer)
+        public bool Add(string name, int timeout, int loopCount, Service sv, Event ev)
         {
             lock (this.m_mutex)
             {
@@ -120,7 +121,7 @@ namespace ServiceState.Common
                 }
                 else
                 {
-                    this.m_timerInfos.Add(name, new TimerInformation(name, timeout, sequenceNo, observer));
+                    this.m_timerInfos.Add(name, new TimeoutEventInfo(name, timeout, loopCount, sv, ev));
                 }
             }
             return true;
@@ -146,7 +147,7 @@ namespace ServiceState.Common
             return true;
         }
 
-        public static TimerManager Instance
+        public static TimeoutEventManager Instance
         {
             get
             {
